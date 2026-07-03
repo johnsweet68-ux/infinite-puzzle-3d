@@ -84,7 +84,7 @@
       // ── FIRST-PERSON CAMERA ──
       // Start position - will be adjusted when environment loads
       var camera = new BABYLON.UniversalCamera(
-        'fps', new BABYLON.Vector3(0, 1.7, 0), scene);
+        'fps', new BABYLON.Vector3(0, 1.7, 5), scene);
       camera.setTarget(new BABYLON.Vector3(0, 1.7, -5));
       camera.attachControl(canvas, true);
       camera.speed = 0.22;
@@ -123,7 +123,7 @@
       shadowGen.darkness = 0.35;
       
       // ── CORRUPTION GLOW LIGHTS ──
-      var breachGlow = new BABYLON.PointLight('breachGlow', new BABYLON.Vector3(0, 2.5, -8), scene);
+      var breachGlow = new BABYLON.PointLight('breachGlow', new BABYLON.Vector3(0, 2.5, -11), scene);
       breachGlow.diffuse = TEAL;
       breachGlow.intensity = 18;
       breachGlow.range = 20;
@@ -135,11 +135,9 @@
       
       setProgress(40);
       
-      // ── LOAD CC0 ENVIRONMENT (Kenney Interior)
-      // Using a reliable free interior from Khronos sample assets
-      // This is the "Emissive" or "Metallic Roughness" test scene - good for chambers
-      const ENV_BASE = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Sponza/glTF/';
-      const ENV_FILE = 'Sponza.gltf';
+      // ── LOAD AI-GENERATED INTERIOR (Meshy)
+      // Dark abandoned warehouse - AI-generated for The Infinite Puzzle
+      const MODEL_URL = 'https://assets.meshy.ai/a9e03a9e-4758-4071-8ce0-634d4ed997ce/tasks/019f29a1-d9e6-7203-afc0-d1c49bab0a9b/output/model.glb';
       
       var envLoaded = false;
       var loadedMeshes = [];
@@ -151,10 +149,17 @@
             m.checkCollisions = true;
             m.receiveShadows = true;
             shadowGen.addShadowCaster(m);
+            // Scale and position adjustments for this specific model
+            m.scaling = new BABYLON.Vector3(0.8, 0.8, 0.8);
           }
         });
         
-        // Create octree for collision optimization
+        // Center the model
+        var center = scene.getMeshByName('__root__');
+        if (center) {
+          center.position = new BABYLON.Vector3(0, 0, -5);
+        }
+        
         try { scene.createOrUpdateSelectionOctree(); } catch(e) {}
         
         setProgress(85);
@@ -169,27 +174,32 @@
       
       function onError(msg) {
         console.warn('Environment load failed:', msg);
-        // Fallback: show a basic floor so player can walk
-        var floor = BABYLON.MeshBuilder.CreateGround('floor', { width: 30, height: 30 }, scene);
-        var floorMat = new BABYLON.PBRMaterial('floorMat', scene);
-        floorMat.albedoColor = new BABYLON.Color3(0.04, 0.04, 0.05);
-        floorMat.metallic = 0.1;
-        floorMat.roughness = 0.8;
-        floor.material = floorMat;
-        floor.receiveShadows = true;
-        floor.checkCollisions = true;
-        setProgress(85);
+        // Fallback to Sponza if Meshy model fails
+        console.log('Falling back to Sponza environment...');
+        BABYLON.SceneLoader.ImportMesh(null, 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Sponza/glTF/', 'Sponza.gltf', scene, 
+          function(meshes) {
+            meshes.forEach(function(m) {
+              m.checkCollisions = true;
+              m.receiveShadows = true;
+              shadowGen.addShadowCaster(m);
+            });
+            setProgress(85);
+          }, 
+          onProgress
+        );
       }
       
-      // Safety timeout - reveal after 45 seconds even if still loading
+      // Safety timeout - reveal after 60 seconds even if still loading
       setTimeout(function() {
         if (!envLoaded) {
-          console.warn('Environment load timeout - showing fallback');
-          onError('timeout');
+          console.warn('Environment load timeout');
+          loadingEl.classList.add('hidden');
+          setProgress(100);
         }
-      }, 45000);
+      }, 60000);
       
-      BABYLON.SceneLoader.ImportMesh(null, ENV_BASE, ENV_FILE, scene, 
+      // Load AI-generated model
+      BABYLON.SceneLoader.ImportMesh(null, '', MODEL_URL, scene, 
         onEnvironmentLoaded, 
         onProgress, 
         onError
@@ -199,7 +209,7 @@
       
       // ── BREACH (tear between realities) ──
       var breach = BABYLON.MeshBuilder.CreateDisc('breach', { radius: 1.5, tessellation: 32 }, scene);
-      breach.position = new BABYLON.Vector3(0, 2.5, -7);
+      breach.position = new BABYLON.Vector3(0, 2.5, -12);
       var breachVerts = breach.getVerticesData(BABYLON.VertexBuffer.PositionKind);
       for (var v = 0; v < breachVerts.length; v += 3) {
         breachVerts[v + 2] += (Math.random() - 0.5) * 0.25;
@@ -332,7 +342,7 @@
         engine.resize();
       });
       
-      console.log('[The Infinite Puzzle] Phase A with Sponza environment · Babylon.js v' + BABYLON.Engine.Version);
+      console.log('[The Infinite Puzzle] Phase A with AI-generated interior · Babylon.js v' + BABYLON.Engine.Version);
     })();
   </script>
 </body>
