@@ -20,6 +20,8 @@ class Game {
   }
   
   init() {
+    console.log('[Game] Initializing...');
+    
     // Create engine
     this.engine = new BABYLON.Engine(this.canvas, true, {
       stencil: true,
@@ -27,10 +29,12 @@ class Game {
       preserveDrawingBuffer: true,
       powerPreference: 'high-performance'
     });
+    console.log('[Game] Engine created');
     
     // Create scene
     this.scene = new BABYLON.Scene(this.engine);
     this.scene.clearColor = new BABYLON.Color3(0.01, 0.012, 0.015);
+    console.log('[Game] Scene created');
     
     // Enable collisions
     this.scene.collisionsEnabled = true;
@@ -56,6 +60,8 @@ class Game {
     window.addEventListener('resize', () => {
       this.engine.resize();
     });
+    
+    console.log('[Game] Init complete');
   }
   
   setupCamera() {
@@ -80,6 +86,8 @@ class Game {
     this.camera.checkCollisions = true;
     this.camera.applyGravity = false;
     this.camera.ellipsoid = new BABYLON.Vector3(0.5, 0.85, 0.5);
+    
+    console.log('[Game] Camera setup complete');
   }
   
   setupLighting() {
@@ -98,11 +106,14 @@ class Game {
     this.shadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_HIGH;
     this.shadowGenerator.darkness = 0.4;
     this.shadowGenerator.bias = 0.001;
+    
+    console.log('[Game] Lighting setup complete');
   }
   
   startGame() {
+    console.log('[Game] Starting game...');
+    
     const loadingScreen = document.getElementById('loading');
-    const loadingText = document.getElementById('world-name');
     const hud = document.getElementById('hud');
     const worldTitle = document.getElementById('world-title');
     
@@ -110,76 +121,111 @@ class Game {
     const worldId = 'apartment';
     const world = WORLDS[worldId];
     
+    console.log('[Game] Loading world:', worldId);
+    
     if (world) {
-      this.loadWorld(world, () => {
-        // Hide loading, show game
-        loadingScreen.classList.add('hidden');
-        hud.classList.remove('hidden');
-        worldTitle.textContent = world.name;
-        
-        // Attach camera controls
-        this.camera.attachControl(this.canvas, true);
-        
-        // Lock pointer on click
-        this.canvas.addEventListener('click', () => {
-          this.canvas.requestPointerLock();
+      // Use setTimeout to ensure UI updates
+      setTimeout(() => {
+        this.loadWorld(world, () => {
+          console.log('[Game] World loaded successfully');
+          // Hide loading, show game
+          loadingScreen.classList.add('hidden');
+          hud.classList.remove('hidden');
+          worldTitle.textContent = world.name;
+          
+          // Attach camera controls
+          this.camera.attachControl(this.canvas, true);
+          
+          // Lock pointer on click
+          this.canvas.addEventListener('click', () => {
+            this.canvas.requestPointerLock();
+          });
+          
+          // Start game loop
+          this.isRunning = true;
+          console.log('[Game] Game running');
         });
-        
-        // Start game loop
-        this.isRunning = true;
-      });
+      }, 100);
+    } else {
+      console.error('[Game] World not found:', worldId);
     }
   }
   
   loadWorld(world, callback) {
-    this.setProgress(20);
-    this.currentWorld = world;
+    console.log('[Game] loadWorld called');
+    this.setProgress(10);
     
-    // Set environment
-    this.setEnvironment(world);
-    this.setProgress(40);
-    
-    // Build world geometry
-    if (world.build) {
-      world.build(this.scene, this.shadowGenerator);
+    try {
+      this.currentWorld = world;
+      
+      // Set environment
+      console.log('[Game] Setting environment...');
+      this.setEnvironment(world);
+      this.setProgress(30);
+      
+      // Build world geometry
+      console.log('[Game] Building world...');
+      if (world.build) {
+        world.build(this.scene, this.shadowGenerator);
+      }
+      this.setProgress(60);
+      
+      // Setup player
+      console.log('[Game] Setting up player...');
+      this.camera.position = world.playerStart.clone();
+      this.camera.setTarget(world.playerTarget);
+      this.camera.rotation = new BABYLON.Vector3(0, Math.PI, 0);
+      
+      this.player = new PlayerController(this.scene, this.camera);
+      
+      // Setup graphics pipeline
+      console.log('[Game] Setting up graphics...');
+      this.graphics = new GraphicsPipeline(this.scene, this.camera);
+      this.graphics.setWorldSettings(world);
+      
+      // Create rift
+      console.log('[Game] Creating rift...');
+      this.createRift(world);
+      this.setProgress(90);
+      
+      // Final setup
+      console.log('[Game] Finalizing...');
+      setTimeout(() => {
+        this.setProgress(100);
+        if (callback) callback();
+      }, 500);
+      
+    } catch (e) {
+      console.error('[Game] Error loading world:', e);
+      // Still try to show the game even if there's an error
+      setTimeout(() => {
+        this.setProgress(100);
+        if (callback) callback();
+      }, 1000);
     }
-    this.setProgress(70);
-    
-    // Setup player
-    this.camera.position = world.playerStart.clone();
-    this.camera.setTarget(world.playerTarget);
-    this.camera.rotation = new BABYLON.Vector3(0, Math.PI, 0);
-    
-    this.player = new PlayerController(this.scene, this.camera);
-    
-    // Setup graphics pipeline
-    this.graphics = new GraphicsPipeline(this.scene, this.camera);
-    this.graphics.setWorldSettings(world);
-    
-    // Create rift
-    this.createRift(world);
-    this.setProgress(90);
-    
-    // Final setup
-    setTimeout(() => {
-      this.setProgress(100);
-      if (callback) callback();
-    }, 800);
   }
   
   setEnvironment(world) {
+    console.log('[Game] Loading environment texture:', world.envTexture);
+    
     // Environment texture (IBL)
     if (world.envTexture) {
-      if (this.envTexture) {
-        this.envTexture.dispose();
+      try {
+        if (this.envTexture) {
+          this.envTexture.dispose();
+        }
+        
+        this.envTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
+          world.envTexture,
+          this.scene
+        );
+        this.scene.environmentTexture = this.envTexture;
+        this.scene.environmentIntensity = world.envIntensity || 0.8;
+        console.log('[Game] Environment texture loaded');
+      } catch (e) {
+        console.warn('[Game] Environment texture failed, using fallback:', e);
+        // Continue without environment texture
       }
-      
-      this.envTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
-        world.envTexture,
-        this.scene
-      );
-      this.scene.environmentTexture = this.envTexture;
-      this.scene.environmentIntensity = world.envIntensity || 0.8;
     }
     
     // Fog
@@ -296,5 +342,11 @@ class Game {
 
 // Initialize game when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('[Game] DOM loaded, starting...');
   window.game = new Game();
+});
+
+// Also try window load as fallback
+window.addEventListener('load', () => {
+  console.log('[Game] Window loaded');
 });
