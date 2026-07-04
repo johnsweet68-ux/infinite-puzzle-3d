@@ -1,0 +1,118 @@
+name: Generate 3D assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      batch:
+        description: "Which asset batch to generate"
+        type: choice
+        options: [core, dressing, all]
+        default: core
+      only:
+        description: "Only generate keys containing this text (optional)"
+        type: string
+        required: false
+      limit:
+        description: "Max number of assets this run (optional)"
+        type: string
+        required: false
+      dry_run:
+        description: "Dry run — validate prompts only, no credits used"
+        type: boolean
+        default: false
+
+concurrency:
+  group: asset-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    name: Check keys & account
+    runs-on: ubuntu-latest
+    outputs:
+      account_id: ${{ steps.cf.outputs.account_id }}
+    steps:
+      - name: Check Meshy key & balance
+        if: ${{ !inputs.dry_run }}
+        env:
+          MESHY_API_KEY: ${{ secrets.MESHY_API_KEY }}
+        run: |
+          if [ -z "$MESHY_API_KEY" ]; then
+            echo "::error::MESHY_API_KEY secret is missing. Add it in Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          BAL=$(curl -sf https://api.meshy.ai/openapi/v1/balance \
+            -H "Authorization: Bearer $MESHY_API_KEY" | jq -r '.balance // .result // "unknown"') || {
+            echo "::error::Meshy API key was rejected. Check the key and that the plan is Pro or higher."
+            exit 1
+          }
+          echo "Meshy OK — credit balance: $BAL" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Check Cloudflare token & find account
+        id: cf
+        if: ${{ !inputs.dry_run }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN secret is missing. Add it in Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          curl -sf https://api.cloudflare.com/client/v4/user/tokens/verify \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" >/dev/null || {
+            echo "::error::Cloudflare token was rejected (expired or invalid)."
+            exit 1
+          }
+          ACCOUNT_ID=$(curl -sf https://api.cloudflare.com/client/v4/accounts \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | jq -r '.result[0].id // empty')
+          if [ -z "$ACCOUNT_ID" ]; then
+            echo "::error::Token is valid but cannot read the account. It needs 'Account Settings: Read' and 'Workers R2 Storage: Edit' permissions."
+            exit 1
+          fi
+          echo "account_id=$ACCOUNT_ID" >> "$GITHUB_OUTPUT"
+          echo "Cloudflare OK — account $ACCOUNT_ID" | tee -a "$GITHUB_STEP_SUMMARY"
+
+  generate:
+    name: Generate, optimise & upload
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install tools
+        run: npm install -g @gltf-transform/cli wrangler
+
+      - name: Run pipeline
+        env:
+          MESHY_API_KEY: ${{ secrets.MESHY_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ needs.verify.outputs.account_id }}
+          R2_BUCKET: infinite-puzzle-assets
+        run: |
+          FLAGS="--batch ${{ inputs.batch }}"
+          [ -n "${{ inputs.only }}" ] && FLAGS="$FLAGS --only ${{ inputs.only }}"
+          [ -n "${{ inputs.limit }}" ] && FLAGS="$FLAGS --limit ${{ inputs.limit }}"
+          [ "${{ inputs.dry_run }}" = "true" ] && FLAGS="$FLAGS --dry-run"
+          node scripts/generate-assets.mjs $FLAGS
+
+      - name: Commit licence log & catalog
+        if: ${{ !inputs.dry_run && always() }}
+        run: |
+          git config user.name "asset-pipeline[bot]"
+          git config user.email "asset-pipeline@users.noreply.github.com"
+          git add CREDITS.md assets/catalog.json assets/thumbnails || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: asset pipeline run — update CREDITS.md and catalog"
+            git pull --rebase origin ${GITHUB_REF_NAME}
+            git push origin HEAD:${GITHUB_REF_NAME}
+          else
+            echo "Nothing new to commit."
+          fi
