@@ -3,347 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Infinite Puzzle — Phase A</title>
-  <style>
-    html, body { margin: 0; padding: 0; overflow: hidden; background: #000; height: 100%; }
-    #renderCanvas { width: 100vw; height: 100vh; display: block; touch-action: none; outline: none; }
-    #loading {
-      position: fixed; inset: 0; background: #05070a; z-index: 50;
-      display: flex; align-items: center; justify-content: center; flex-direction: column;
-      font-family: ui-monospace, monospace; color: #6fd8cf; letter-spacing: 0.4em;
-      transition: opacity 1.6s ease;
-    }
-    #loading.hidden { opacity: 0; pointer-events: none; }
-    #loading-text { font-size: 14px; margin-bottom: 20px; }
-    #bar { width: 260px; height: 2px; background: rgba(111, 216, 207, 0.15); }
-    #fill { width: 0%; height: 100%; background: #6fd8cf; box-shadow: 0 0 14px #6fd8cf; transition: width 0.3s; }
-    #instructions {
-      position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
-      font-family: ui-monospace, monospace; color: rgba(180, 230, 220, 0.5);
-      letter-spacing: 0.26em; font-size: 11px; text-transform: uppercase;
-      pointer-events: none; user-select: none; text-shadow: 0 0 10px rgba(0,0,0,0.85);
-    }
-    #error-msg {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      font-family: ui-monospace, monospace; color: #ff6b6b; text-align: center;
-      display: none;
-    }
-  </style>
+  <title>The Infinite Puzzle — Choose Your Entry Point</title>
+  <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
   <canvas id="renderCanvas"></canvas>
-  <div id="loading">
-    <div id="loading-text">ENTERING THE CHAMBER</div>
-    <div id="bar"><div id="fill"></div></div>
+  
+  <!-- Location Selection Screen -->
+  <div id="location-select" class="location-select">
+    <div class="select-container">
+      <h1 class="title">The Infinite Puzzle</h1>
+      <p class="subtitle">Choose where your journey begins</p>
+      
+      <div class="locations-grid">
+        <div class="location-card" data-world="apartment">
+          <div class="card-image apartment-img"></div>
+          <div class="card-content">
+            <h2>Modern Apartment</h2>
+            <p>A cozy urban flat. Morning light filters through blinds.</p>
+          </div>
+        </div>
+        
+        <div class="location-card" data-world="subway">
+          <div class="card-image subway-img"></div>
+          <div class="card-content">
+            <h2>Subway Station</h2>
+            <p>Underground transit. Fluorescent lights hum in the dark.</p>
+          </div>
+        </div>
+        
+        <div class="location-card" data-world="victorian">
+          <div class="card-image victorian-img"></div>
+          <div class="card-content">
+            <h2>Victorian Study</h2>
+            <p>A grandfather clock ticks. Dust motes dance in amber light.</p>
+          </div>
+        </div>
+        
+        <div class="location-card" data-world="forest">
+          <div class="card-image forest-img"></div>
+          <div class="card-content">
+            <h2>Forest Clearing</h2>
+            <p>Ancient trees surround a moonlit clearing. Something stirs.</p>
+          </div>
+        </div>
+      </div>
+      
+      <p class="hint">Click a location to enter the multiverse</p>
+    </div>
   </div>
-  <div id="instructions">WASD move · mouse look · click to capture</div>
-  <div id="error-msg"></div>
+  
+  <!-- Loading Screen -->
+  <div id="loading" class="loading hidden">
+    <div class="loading-content">
+      <div class="loading-text">ENTERING <span id="world-name">...</span></div>
+      <div class="bar"><div id="fill"></div></div>
+    </div>
+  </div>
+  
+  <!-- In-Game HUD -->
+  <div id="hud" class="hud hidden">
+    <div class="hud-top">
+      <span id="world-title">Modern Apartment</span>
+    </div>
+    <div class="hud-bottom">
+      <span class="controls">WASD move · mouse look · E interact</span>
+      <button id="exit-btn" class="exit-btn">Exit</button>
+    </div>
+  </div>
+  
+  <!-- Interaction Prompt -->
+  <div id="interact-prompt" class="interact-prompt hidden">
+    <span>Press E to enter the rift</span>
+  </div>
 
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
   <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-  <script>
-    (function() {
-      "use strict";
-      
-      // ═══════════════════════════════════════════════════════════
-      // THE INFINITE PUZZLE — Phase A with CC0 Environment
-      // Loading Kenney Interior Starter (CC0)
-      // ═══════════════════════════════════════════════════════════
-      
-      const fillEl = document.getElementById('fill');
-      const loadingEl = document.getElementById('loading');
-      const errorEl = document.getElementById('error-msg');
-      function setProgress(p) { fillEl.style.width = Math.min(100, p) + '%'; }
-      function showError(msg) { errorEl.textContent = msg; errorEl.style.display = 'block'; }
-      
-      // Colors from the aesthetic spec
-      const TEAL = new BABYLON.Color3(0.16, 0.92, 0.85);
-      const RED = new BABYLON.Color3(0.90, 0.12, 0.14);
-      const COLD = new BABYLON.Color3(0.55, 0.62, 0.85);
-      
-      const canvas = document.getElementById('renderCanvas');
-      const engine = new BABYLON.Engine(canvas, true, { stencil: true, antialias: true });
-      const scene = new BABYLON.Scene(engine);
-      
-      // Dark corrupted atmosphere
-      scene.clearColor = new BABYLON.Color3(0.01, 0.018, 0.026);
-      scene.collisionsEnabled = true;
-      scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
-      scene.fogColor = new BABYLON.Color3(0.04, 0.07, 0.09);
-      scene.fogDensity = 0.045;
-      
-      setProgress(10);
-      
-      // ── HDR IBL — image-based lighting (key for realism) ──
-      var env = BABYLON.CubeTexture.CreateFromPrefilteredData(
-        'https://assets.babylonjs.com/environments/night.env', scene);
-      scene.environmentTexture = env;
-      scene.environmentIntensity = 0.55; // Slightly brighter to show the environment
-      setProgress(25);
-      
-      // ── FIRST-PERSON CAMERA ──
-      // Start position - will be adjusted when environment loads
-      var camera = new BABYLON.UniversalCamera(
-        'fps', new BABYLON.Vector3(0, 1.7, 5), scene);
-      camera.setTarget(new BABYLON.Vector3(0, 1.7, -5));
-      camera.attachControl(canvas, true);
-      camera.speed = 0.22;
-      camera.angularSensibility = 3600;
-      camera.minZ = 0.05;
-      camera.fov = 1.0;
-      camera.keysUp = [87, 38];
-      camera.keysDown = [83, 40];
-      camera.keysLeft = [65, 37];
-      camera.keysRight = [68, 39];
-      camera.checkCollisions = true;
-      camera.applyGravity = false;
-      camera.ellipsoid = new BABYLON.Vector3(0.5, 0.85, 0.5);
-      
-      canvas.addEventListener('click', function() {
-        if (canvas.requestPointerLock) canvas.requestPointerLock();
-      });
-      
-      setProgress(30);
-      
-      // ── LIGHTING ──
-      var ambient = new BABYLON.HemisphericLight('ambient', new BABYLON.Vector3(0, 1, 0), scene);
-      ambient.intensity = 0.15;
-      ambient.diffuse = COLD;
-      ambient.groundColor = new BABYLON.Color3(0.04, 0.03, 0.03);
-      
-      // Shadow-casting key light
-      var keyLight = new BABYLON.DirectionalLight('key', new BABYLON.Vector3(-0.5, -0.8, 0.3), scene);
-      keyLight.position = new BABYLON.Vector3(5, 8, -5);
-      keyLight.intensity = 1.5;
-      keyLight.diffuse = new BABYLON.Color3(0.9, 0.85, 0.8);
-      
-      var shadowGen = new BABYLON.ShadowGenerator(1024, keyLight);
-      shadowGen.usePercentageCloserFiltering = true;
-      shadowGen.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
-      shadowGen.darkness = 0.35;
-      
-      // ── CORRUPTION GLOW LIGHTS ──
-      var breachGlow = new BABYLON.PointLight('breachGlow', new BABYLON.Vector3(0, 2.5, -11), scene);
-      breachGlow.diffuse = TEAL;
-      breachGlow.intensity = 18;
-      breachGlow.range = 20;
-      
-      var redGlow = new BABYLON.PointLight('redGlow', new BABYLON.Vector3(4, 2.5, 2), scene);
-      redGlow.diffuse = RED;
-      redGlow.intensity = 8;
-      redGlow.range = 14;
-      
-      setProgress(40);
-      
-      // ── LOAD AI-GENERATED INTERIOR (Meshy)
-      // Dark abandoned warehouse - AI-generated for The Infinite Puzzle
-      const MODEL_URL = 'https://assets.meshy.ai/a9e03a9e-4758-4071-8ce0-634d4ed997ce/tasks/019f29a1-d9e6-7203-afc0-d1c49bab0a9b/output/model.glb';
-      
-      var envLoaded = false;
-      var loadedMeshes = [];
-      
-      function onEnvironmentLoaded(meshes) {
-        loadedMeshes = meshes;
-        meshes.forEach(function(m) {
-          if (m.getTotalVertices && m.getTotalVertices() > 0) {
-            m.checkCollisions = true;
-            m.receiveShadows = true;
-            shadowGen.addShadowCaster(m);
-            // Scale and position adjustments for this specific model
-            m.scaling = new BABYLON.Vector3(0.8, 0.8, 0.8);
-          }
-        });
-        
-        // Center the model
-        var center = scene.getMeshByName('__root__');
-        if (center) {
-          center.position = new BABYLON.Vector3(0, 0, -5);
-        }
-        
-        try { scene.createOrUpdateSelectionOctree(); } catch(e) {}
-        
-        setProgress(85);
-        envLoaded = true;
-      }
-      
-      function onProgress(evt) {
-        if (evt && evt.lengthComputable) {
-          setProgress(40 + (evt.loaded / evt.total) * 40);
-        }
-      }
-      
-      function onError(msg) {
-        console.warn('Environment load failed:', msg);
-        // Fallback to Sponza if Meshy model fails
-        console.log('Falling back to Sponza environment...');
-        BABYLON.SceneLoader.ImportMesh(null, 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Sponza/glTF/', 'Sponza.gltf', scene, 
-          function(meshes) {
-            meshes.forEach(function(m) {
-              m.checkCollisions = true;
-              m.receiveShadows = true;
-              shadowGen.addShadowCaster(m);
-            });
-            setProgress(85);
-          }, 
-          onProgress
-        );
-      }
-      
-      // Safety timeout - reveal after 60 seconds even if still loading
-      setTimeout(function() {
-        if (!envLoaded) {
-          console.warn('Environment load timeout');
-          loadingEl.classList.add('hidden');
-          setProgress(100);
-        }
-      }, 60000);
-      
-      // Load AI-generated model
-      BABYLON.SceneLoader.ImportMesh(null, '', MODEL_URL, scene, 
-        onEnvironmentLoaded, 
-        onProgress, 
-        onError
-      );
-      
-      setProgress(50);
-      
-      // ── BREACH (tear between realities) ──
-      var breach = BABYLON.MeshBuilder.CreateDisc('breach', { radius: 1.5, tessellation: 32 }, scene);
-      breach.position = new BABYLON.Vector3(0, 2.5, -12);
-      var breachVerts = breach.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-      for (var v = 0; v < breachVerts.length; v += 3) {
-        breachVerts[v + 2] += (Math.random() - 0.5) * 0.25;
-      }
-      breach.updateVerticesData(BABYLON.VertexBuffer.PositionKind, breachVerts);
-      
-      var breachMat = new BABYLON.PBRMaterial('breachMat', scene);
-      breachMat.emissiveColor = TEAL;
-      breachMat.albedoColor = new BABYLON.Color3(0.05, 0.15, 0.12);
-      breach.material = breachMat;
-      
-      // Glow layer
-      var glow = new BABYLON.GlowLayer('glow', scene, { blurKernelSize: 48 });
-      glow.intensity = 0.85;
-      
-      // ── PARTICLES: SPORES ──
-      var sporeTex = (function() {
-        var t = new BABYLON.DynamicTexture('sporeTex', 64, scene, false);
-        var c = t.getContext();
-        var g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
-        g.addColorStop(0, 'rgba(255,255,255,1)');
-        g.addColorStop(0.4, 'rgba(255,255,255,0.5)');
-        g.addColorStop(1, 'rgba(255,255,255,0)');
-        c.fillStyle = g;
-        c.fillRect(0, 0, 64, 64);
-        t.update();
-        t.hasAlpha = true;
-        return t;
-      })();
-      
-      var spores = new BABYLON.ParticleSystem('spores', 800, scene);
-      spores.particleTexture = sporeTex;
-      spores.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
-      spores.emitter = new BABYLON.Vector3(0, 3, 0);
-      spores.minEmitBox = new BABYLON.Vector3(-15, -2, -15);
-      spores.maxEmitBox = new BABYLON.Vector3(15, 5, 15);
-      spores.color1 = new BABYLON.Color4(0.7, 0.95, 0.9, 0.4);
-      spores.color2 = new BABYLON.Color4(0.8, 0.85, 0.7, 0.25);
-      spores.colorDead = new BABYLON.Color4(0.2, 0.3, 0.35, 0);
-      spores.minSize = 0.02;
-      spores.maxSize = 0.09;
-      spores.minLifeTime = 8;
-      spores.maxLifeTime = 20;
-      spores.emitRate = 60;
-      spores.direction1 = new BABYLON.Vector3(-0.05, -0.1, -0.05);
-      spores.direction2 = new BABYLON.Vector3(0.05, -0.02, 0.05);
-      spores.minEmitPower = 0.03;
-      spores.maxEmitPower = 0.12;
-      spores.gravity = new BABYLON.Vector3(0, -0.04, 0);
-      spores.start();
-      
-      setProgress(65);
-      
-      // ── POST-PROCESSING ──
-      try {
-        if (BABYLON.SSAO2RenderingPipeline && BABYLON.SSAO2RenderingPipeline.IsSupported) {
-          var ssao = new SSAO2RenderingPipeline('ssao', scene, { ssaoRatio: 0.7, blurRatio: 1 }, [camera]);
-          ssao.radius = 0.9;
-          ssao.totalStrength = 1.0;
-          ssao.expensiveBlur = true;
-          ssao.samples = 12;
-          ssao.maxZ = 60;
-        }
-      } catch (e) { console.warn('SSAO skipped:', e); }
-      
-      var pipeline = new BABYLON.DefaultRenderingPipeline('pipeline', true, scene, [camera]);
-      pipeline.fxaaEnabled = true;
-      pipeline.bloomEnabled = true;
-      pipeline.bloomThreshold = 0.6;
-      pipeline.bloomWeight = 0.55;
-      pipeline.bloomKernel = 64;
-      
-      pipeline.imageProcessing.toneMappingEnabled = true;
-      pipeline.imageProcessing.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
-      pipeline.imageProcessing.exposure = 1.15;
-      pipeline.imageProcessing.contrast = 1.3;
-      
-      pipeline.imageProcessing.vignetteEnabled = true;
-      pipeline.imageProcessing.vignetteWeight = 3.2;
-      pipeline.imageProcessing.vignetteColor = new BABYLON.Color4(0, 0, 0, 1);
-      
-      pipeline.grainEnabled = true;
-      pipeline.grain.intensity = 8;
-      pipeline.grain.animated = true;
-      
-      pipeline.chromaticAberrationEnabled = true;
-      pipeline.chromaticAberration.aberrationAmount = 12;
-      pipeline.chromaticAberration.radialIntensity = 0.75;
-      
-      pipeline.imageProcessing.colorCurvesEnabled = true;
-      var curves = new BABYLON.ColorCurves();
-      curves.shadowsHue = 180;
-      curves.shadowsDensity = 35;
-      curves.shadowsSaturation = 25;
-      curves.highlightsHue = 35;
-      curves.highlightsDensity = 15;
-      pipeline.imageProcessing.colorCurves = curves;
-      
-      setProgress(80);
-      
-      // ── ANIMATION LOOP ──
-      var time = 0;
-      scene.registerBeforeRender(function() {
-        var dt = engine.getDeltaTime() / 1000;
-        time += dt;
-        
-        if (camera.position.y !== 1.7) camera.position.y = 1.7;
-        
-        // Corruption lights breathe
-        breachGlow.intensity = 16 + Math.sin(time * 1.3) * 6;
-        redGlow.intensity = 7 + Math.sin(time * 0.9 + 1.5) * 3;
-        
-        // Breach pulses
-        var pulse = 0.8 + Math.sin(time * 2.0) * 0.3;
-        breachMat.emissiveColor = TEAL.scale(pulse);
-      });
-      
-      // Hide loading after everything is ready
-      setTimeout(function() {
-        loadingEl.classList.add('hidden');
-        setProgress(100);
-      }, 1500);
-      
-      // ── RENDER LOOP ──
-      engine.runRenderLoop(function() {
-        scene.render();
-      });
-      
-      window.addEventListener('resize', function() {
-        engine.resize();
-      });
-      
-      console.log('[The Infinite Puzzle] Phase A with AI-generated interior · Babylon.js v' + BABYLON.Engine.Version);
-    })();
-  </script>
+  <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+  <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+  <script src="js/worlds.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/rift.js"></script>
+  <script src="js/graphics.js"></script>
+  <script src="js/game.js"></script>
 </body>
 </html>

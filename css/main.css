@@ -1,0 +1,310 @@
+/* Main Styles */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;500;600&family=JetBrains+Mono:wght@300;400&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a0a0c;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+#renderCanvas {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  outline: none;
+}
+
+/* Location Selection */
+.location-select {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #0a0a0c 0%, #12141a 50%, #0a0a0c 100%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.8s ease, visibility 0.8s;
+}
+
+.location-select.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.select-container {
+  max-width: 1100px;
+  width: 90%;
+  padding: 40px;
+}
+
+.title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3.5rem;
+  font-weight: 300;
+  color: #e8e4df;
+  text-align: center;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  text-shadow: 0 0 60px rgba(111, 216, 207, 0.3);
+}
+
+.subtitle {
+  text-align: center;
+  color: rgba(111, 216, 207, 0.6);
+  font-size: 0.75rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  margin-bottom: 50px;
+}
+
+.locations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.location-card {
+  background: linear-gradient(180deg, rgba(30, 32, 38, 0.9) 0%, rgba(18, 20, 26, 0.95) 100%);
+  border: 1px solid rgba(111, 216, 207, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.location-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(111, 216, 207, 0.5);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(111, 216, 207, 0.1);
+}
+
+.card-image {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.card-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(18, 20, 26, 0.8) 100%);
+}
+
+.apartment-img {
+  background: linear-gradient(135deg, #2a2a35 0%, #1a1a22 100%),
+              url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23" opacity="0.1"/><rect x="10" y="60" width="30" height="35" fill="%236fd8cf" opacity="0.15"/><rect x="55" y="50" width="35" height="45" fill="%236fd8cf" opacity="0.1"/></svg>');
+}
+
+.subway-img {
+  background: linear-gradient(135deg, #1a2530 0%, #0d1218 100%);
+}
+
+.victorian-img {
+  background: linear-gradient(135deg, #2d2418 0%, #1a1510 100%);
+}
+
+.forest-img {
+  background: linear-gradient(135deg, #0a1a12 0%, #051008 100%);
+}
+
+.card-content {
+  padding: 20px;
+}
+
+.card-content h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #e8e4df;
+  margin-bottom: 8px;
+  letter-spacing: 0.1em;
+}
+
+.card-content p {
+  font-size: 0.7rem;
+  color: rgba(180, 170, 160, 0.7);
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+}
+
+.hint {
+  text-align: center;
+  color: rgba(111, 216, 207, 0.4);
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+/* Loading Screen */
+.loading {
+  position: fixed;
+  inset: 0;
+  background: #05070a;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+
+.loading.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-content {
+  text-align: center;
+}
+
+.loading-text {
+  font-family: 'JetBrains Mono', monospace;
+  color: #6fd8cf;
+  font-size: 0.8rem;
+  letter-spacing: 0.5em;
+  margin-bottom: 20px;
+}
+
+.bar {
+  width: 280px;
+  height: 2px;
+  background: rgba(111, 216, 207, 0.15);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+#fill {
+  width: 0%;
+  height: 100%;
+  background: #6fd8cf;
+  box-shadow: 0 0 20px #6fd8cf;
+  transition: width 0.3s ease;
+}
+
+/* In-Game HUD */
+.hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+.hud.hidden {
+  opacity: 0;
+}
+
+.hud-top {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#world-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: rgba(232, 228, 223, 0.7);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+.hud-bottom {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 30px;
+}
+
+.controls {
+  font-size: 0.6rem;
+  color: rgba(180, 170, 160, 0.5);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.exit-btn {
+  pointer-events: auto;
+  background: rgba(111, 216, 207, 0.1);
+  border: 1px solid rgba(111, 216, 207, 0.3);
+  color: rgba(111, 216, 207, 0.8);
+  padding: 8px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.exit-btn:hover {
+  background: rgba(111, 216, 207, 0.2);
+  border-color: rgba(111, 216, 207, 0.6);
+}
+
+/* Interaction Prompt */
+.interact-prompt {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(111, 216, 207, 0.4);
+  padding: 12px 24px;
+  border-radius: 3px;
+  z-index: 60;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.interact-prompt.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.interact-prompt span {
+  color: #6fd8cf;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .title {
+    font-size: 2rem;
+    letter-spacing: 0.2em;
+  }
+  
+  .locations-grid {
+    grid-template-columns: 1fr;
+    max-width: 320px;
+    margin: 0 auto 30px;
+  }
+  
+  .hud-bottom {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
