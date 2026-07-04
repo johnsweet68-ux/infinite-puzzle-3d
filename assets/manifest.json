@@ -1,0 +1,119 @@
+{
+  "styleSuffix": ", modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+  "meshy": {
+    "aiModel": "meshy-6",
+    "modelType": "standard",
+    "topology": "triangle",
+    "targetPolycount": 30000,
+    "enablePbr": true,
+    "originAt": "bottom"
+  },
+  "budget": {
+    "maxOptimizedBytes": 8000000,
+    "textureSize": 2048
+  },
+  "assets": [
+    {
+      "key": "hub/apartment/sofa_01",
+      "batch": "core",
+      "prompt": "A three-seat sofa with soft fabric upholstery in warm grey, low wooden legs, two loose back cushions",
+      "targetSize": { "axis": "width", "meters": 2.1 }
+    },
+    {
+      "key": "hub/apartment/armchair_01",
+      "batch": "core",
+      "prompt": "A single lounge armchair, moulded shell with fabric seat cushion, tapered wooden legs",
+      "targetSize": { "axis": "width", "meters": 0.8 }
+    },
+    {
+      "key": "hub/apartment/coffee_table_01",
+      "batch": "core",
+      "prompt": "A low rectangular coffee table, solid oak top, thin metal frame legs",
+      "targetSize": { "axis": "width", "meters": 1.1 }
+    },
+    {
+      "key": "hub/apartment/media_console_01",
+      "batch": "core",
+      "prompt": "A low media console cabinet, matte walnut, sliding doors, short splayed legs",
+      "targetSize": { "axis": "width", "meters": 1.6 }
+    },
+    {
+      "key": "hub/apartment/tv_01",
+      "batch": "core",
+      "prompt": "A modern flat-screen television, thin black bezel, on a small central stand",
+      "targetSize": { "axis": "width", "meters": 1.2 }
+    },
+    {
+      "key": "hub/apartment/floor_lamp_01",
+      "batch": "core",
+      "prompt": "A slim standing floor lamp, brushed brass stem, fabric drum shade, round weighted base",
+      "targetSize": { "axis": "height", "meters": 1.5 }
+    },
+    {
+      "key": "hub/apartment/bookshelf_01",
+      "batch": "core",
+      "prompt": "A tall open bookshelf, matte oak, five shelves partly filled with assorted upright books",
+      "targetSize": { "axis": "height", "meters": 1.8 }
+    },
+    {
+      "key": "hub/apartment/plant_01",
+      "batch": "core",
+      "prompt": "A large potted fiddle-leaf fig plant in a matte ceramic pot",
+      "targetSize": { "axis": "height", "meters": 1.6 }
+    },
+    {
+      "key": "hub/apartment/kitchen_counter_01",
+      "batch": "core",
+      "prompt": "A straight modern kitchen counter unit, matte cabinet doors, light stone worktop, integrated sink",
+      "targetSize": { "axis": "width", "meters": 2.4 }
+    },
+    {
+      "key": "hub/apartment/bar_stool_01",
+      "batch": "core",
+      "prompt": "A single kitchen bar stool, wooden seat, black metal frame with footrest",
+      "targetSize": { "axis": "width", "meters": 0.45 }
+    },
+    {
+      "key": "hub/apartment/fridge_01",
+      "batch": "core",
+      "prompt": "A tall freestanding refrigerator, brushed stainless steel, two doors",
+      "targetSize": { "axis": "height", "meters": 1.8 }
+    },
+    {
+      "key": "hub/apartment/table_lamp_01",
+      "batch": "dressing",
+      "prompt": "A small table lamp, ceramic base in muted teal, cream fabric shade",
+      "targetSize": { "axis": "height", "meters": 0.5 }
+    },
+    {
+      "key": "hub/apartment/coffee_machine_01",
+      "batch": "dressing",
+      "prompt": "A modern countertop coffee machine, matte black with stainless accents",
+      "targetSize": { "axis": "height", "meters": 0.35 }
+    },
+    {
+      "key": "hub/apartment/wall_art_01",
+      "batch": "dressing",
+      "prompt": "A single framed abstract painting, thin black frame, original muted abstract composition",
+      "targetSize": { "axis": "width", "meters": 0.8 }
+    },
+    {
+      "key": "hub/apartment/side_table_01",
+      "batch": "dressing",
+      "prompt": "A small round side table, oak top, single turned pedestal leg",
+      "targetSize": { "axis": "width", "meters": 0.5 }
+    },
+    {
+      "key": "hub/apartment/coat_rack_01",
+      "batch": "dressing",
+      "prompt": "A freestanding coat rack, slim brass frame with a hanging coat and scarf",
+      "targetSize": { "axis": "height", "meters": 1.7 }
+    },
+    {
+      "key": "hub/apartment/books_stack_01",
+      "batch": "dressing",
+      "prompt": "A small stack of three closed hardback books, muted cloth covers",
+      "targetSize": { "axis": "width", "meters": 0.3 }
+    }
+  ]
+}
