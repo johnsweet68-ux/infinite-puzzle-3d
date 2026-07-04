@@ -1,0 +1,21 @@
+{
+  "assets": {
+    "hub/apartment/sofa_01.glb": {
+      "key": "hub/apartment/sofa_01.glb",
+      "prompt": "A three-seat sofa with soft fabric upholstery in warm grey, low wooden legs, two loose back cushions",
+      "fullPrompt": "A three-seat sofa with soft fabric upholstery in warm grey, low wooden legs, two loose back cushions, modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+      "previewTaskId": "019f2ef0-b78f-7ad0-bd6a-0a1b98ec8d1c",
+      "refineTaskId": "019f2ef2-23f9-7b03-930b-7a8801d18b03",
+      "creditsUsed": 30,
+      "rawBytes": 12782472,
+      "optBytes": 647592,
+      "overBudget": false,
+      "targetSize": {
+        "axis": "width",
+        "meters": 2.1
+      },
+      "thumbnail": "assets/thumbnails/hub_apartment_sofa_01.png",
+      "generatedAt": "2026-07-04T21:06:00.154Z"
+    }
+  }
+}
