@@ -41,8 +41,8 @@ class Game {
     // Setup lighting
     this.setupLighting();
     
-    // Setup location selection
-    this.setupLocationSelect();
+    // Start loading the world directly
+    this.startGame();
     
     // Start render loop
     this.engine.runRenderLoop(() => {
@@ -80,8 +80,6 @@ class Game {
     this.camera.checkCollisions = true;
     this.camera.applyGravity = false;
     this.camera.ellipsoid = new BABYLON.Vector3(0.5, 0.85, 0.5);
-    
-    // Don't attach controls yet
   }
   
   setupLighting() {
@@ -102,62 +100,44 @@ class Game {
     this.shadowGenerator.bias = 0.001;
   }
   
-  setupLocationSelect() {
-    const cards = document.querySelectorAll('.location-card');
-    const selectScreen = document.getElementById('location-select');
+  startGame() {
     const loadingScreen = document.getElementById('loading');
     const loadingText = document.getElementById('world-name');
     const hud = document.getElementById('hud');
     const worldTitle = document.getElementById('world-title');
-    const exitBtn = document.getElementById('exit-btn');
     
-    cards.forEach(card => {
-      card.addEventListener('click', () => {
-        const worldId = card.dataset.world;
-        const world = WORLDS[worldId];
+    // For now, just use one location (will be random later)
+    const worldId = 'apartment';
+    const world = WORLDS[worldId];
+    
+    if (world) {
+      this.loadWorld(world, () => {
+        // Hide loading, show game
+        loadingScreen.classList.add('hidden');
+        hud.classList.remove('hidden');
+        worldTitle.textContent = world.name;
         
-        if (world) {
-          // Show loading
-          loadingText.textContent = world.name.toUpperCase();
-          selectScreen.classList.add('hidden');
-          loadingScreen.classList.remove('hidden');
-          this.setProgress(20);
-          
-          // Load world
-          setTimeout(() => {
-            this.loadWorld(world, () => {
-              // Hide loading
-              loadingScreen.classList.add('hidden');
-              hud.classList.remove('hidden');
-              worldTitle.textContent = world.name;
-              
-              // Attach camera controls
-              this.camera.attachControl(this.canvas, true);
-              
-              // Start game loop
-              this.isRunning = true;
-            });
-          }, 500);
-        }
+        // Attach camera controls
+        this.camera.attachControl(this.canvas, true);
+        
+        // Lock pointer on click
+        this.canvas.addEventListener('click', () => {
+          this.canvas.requestPointerLock();
+        });
+        
+        // Start game loop
+        this.isRunning = true;
       });
-    });
-    
-    // Exit button
-    exitBtn.addEventListener('click', () => {
-      this.exitToMenu();
-    });
+    }
   }
   
   loadWorld(world, callback) {
-    this.setProgress(30);
+    this.setProgress(20);
     this.currentWorld = world;
-    
-    // Clear previous world
-    this.clearScene();
     
     // Set environment
     this.setEnvironment(world);
-    this.setProgress(50);
+    this.setProgress(40);
     
     // Build world geometry
     if (world.build) {
@@ -184,7 +164,7 @@ class Game {
     setTimeout(() => {
       this.setProgress(100);
       if (callback) callback();
-    }, 500);
+    }, 800);
   }
   
   setEnvironment(world) {
@@ -268,12 +248,7 @@ class Game {
   }
   
   onRiftEnter() {
-    // For now, just show a message
-    // In the full game, this would transition to a multiverse world
     console.log('Entering the multiverse...');
-    
-    // Could add a transition effect here
-    alert('The rift beckons... (Multiverse transition coming soon!)');
   }
   
   update() {
@@ -316,52 +291,6 @@ class Game {
     if (fill) {
       fill.style.width = percent + '%';
     }
-  }
-  
-  clearScene() {
-    // Keep camera
-    const camera = this.camera;
-    
-    // Dispose all meshes except camera
-    this.scene.meshes.forEach(mesh => {
-      if (mesh.name !== 'camera') {
-        mesh.dispose();
-      }
-    });
-    
-    // Dispose rift
-    if (this.rift) {
-      this.rift.dispose();
-      this.rift = null;
-    }
-    
-    // Dispose graphics
-    if (this.graphics) {
-      this.graphics.dispose();
-      this.graphics = null;
-    }
-    
-    // Reset player
-    this.player = null;
-  }
-  
-  exitToMenu() {
-    this.isRunning = false;
-    this.camera.detachControl();
-    
-    // Clear scene
-    this.clearScene();
-    
-    // Show menu
-    const selectScreen = document.getElementById('location-select');
-    const hud = document.getElementById('hud');
-    
-    hud.classList.add('hidden');
-    selectScreen.classList.remove('hidden');
-    
-    // Reset fog
-    this.scene.fogMode = BABYLON.Scene.FOGMODE_NONE;
-    this.scene.clearColor = new BABYLON.Color3(0.01, 0.012, 0.015);
   }
 }
 

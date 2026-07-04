@@ -3,60 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Infinite Puzzle — Choose Your Entry Point</title>
+  <title>The Infinite Puzzle</title>
   <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
   <canvas id="renderCanvas"></canvas>
   
-  <!-- Location Selection Screen -->
-  <div id="location-select" class="location-select">
-    <div class="select-container">
-      <h1 class="title">The Infinite Puzzle</h1>
-      <p class="subtitle">Choose where your journey begins</p>
-      
-      <div class="locations-grid">
-        <div class="location-card" data-world="apartment">
-          <div class="card-image apartment-img"></div>
-          <div class="card-content">
-            <h2>Modern Apartment</h2>
-            <p>A cozy urban flat. Morning light filters through blinds.</p>
-          </div>
-        </div>
-        
-        <div class="location-card" data-world="subway">
-          <div class="card-image subway-img"></div>
-          <div class="card-content">
-            <h2>Subway Station</h2>
-            <p>Underground transit. Fluorescent lights hum in the dark.</p>
-          </div>
-        </div>
-        
-        <div class="location-card" data-world="victorian">
-          <div class="card-image victorian-img"></div>
-          <div class="card-content">
-            <h2>Victorian Study</h2>
-            <p>A grandfather clock ticks. Dust motes dance in amber light.</p>
-          </div>
-        </div>
-        
-        <div class="location-card" data-world="forest">
-          <div class="card-image forest-img"></div>
-          <div class="card-content">
-            <h2>Forest Clearing</h2>
-            <p>Ancient trees surround a moonlit clearing. Something stirs.</p>
-          </div>
-        </div>
-      </div>
-      
-      <p class="hint">Click a location to enter the multiverse</p>
-    </div>
-  </div>
-  
   <!-- Loading Screen -->
-  <div id="loading" class="loading hidden">
+  <div id="loading" class="loading">
     <div class="loading-content">
-      <div class="loading-text">ENTERING <span id="world-name">...</span></div>
+      <div class="loading-text">ENTERING THE REALITY</div>
       <div class="bar"><div id="fill"></div></div>
     </div>
   </div>
@@ -68,7 +24,6 @@
     </div>
     <div class="hud-bottom">
       <span class="controls">WASD move · mouse look · E interact</span>
-      <button id="exit-btn" class="exit-btn">Exit</button>
     </div>
   </div>
   
