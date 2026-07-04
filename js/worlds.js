@@ -7,7 +7,7 @@ const WORLDS = {
     name: 'Modern Apartment',
     description: 'A cozy urban flat with morning light',
     
-    envTexture: 'https://playground.babylonjs.com/textures/environment.env',
+    envTexture: null,
     envIntensity: 0.8,
     
     skybox: null,
