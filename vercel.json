@@ -1,0 +1,12 @@
+{
+  "framework": null,
+  "build": {
+    "output": "public"
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}
