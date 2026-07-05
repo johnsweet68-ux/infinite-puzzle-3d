@@ -33,7 +33,12 @@ pointLight.diffuse = new BABYLON.Color3(1, 0.95, 0.85);
 pointLight.range = 12;
 
 // Shadow generator
-const shadowGenerator = new BABYLON.ShadowGenerator(1024, hemi);
+// Shadows need a directional light (hemispheric lights cannot cast shadows)
+const sun = new BABYLON.DirectionalLight('sun', new BABYLON.Vector3(-0.35, -1, 0.6), scene);
+sun.position = new BABYLON.Vector3(1, 2.9, -6.5); // roughly the window
+sun.intensity = 2.2;
+sun.diffuse = new BABYLON.Color3(1, 0.96, 0.88);
+const shadowGenerator = new BABYLON.ShadowGenerator(1024, sun);
 shadowGenerator.usePercentageCloserFiltering = true;
 shadowGenerator.darkness = 0.4;
 
