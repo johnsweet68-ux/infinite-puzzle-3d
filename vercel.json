@@ -1,8 +1,5 @@
 {
   "framework": null,
-  "build": {
-    "output": "public"
-  },
   "routes": [
     {
       "src": "/(.*)",
