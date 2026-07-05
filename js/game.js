@@ -70,9 +70,14 @@ scene.fogDensity = 0.01;
 
 console.log('[Game] All setup complete, starting render loop');
 
-// Hide loading, show HUD
-document.getElementById('loading').classList.add('hidden');
-document.getElementById('hud').classList.remove('hidden');
+// Hide loading + show HUD only once the GLB props and textures are in
+const pendingLoads = (typeof ASSET_LOADS !== 'undefined') ? ASSET_LOADS : [];
+Promise.allSettled(pendingLoads).then(() => {
+  scene.executeWhenReady(() => {
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+  });
+});
 
 // Attach controls
 camera.attachControl(canvas, true);
