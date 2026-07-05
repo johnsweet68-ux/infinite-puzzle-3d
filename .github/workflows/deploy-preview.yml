@@ -1,0 +1,36 @@
+name: Deploy dev preview to R2
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  deploy:
+    name: Sync site files to R2 /site
+    runs-on: ubuntu-latest
+    env:
+      BUCKET: infinite-puzzle-assets
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find account
+        run: |
+          ACCOUNT_ID=$(curl -sf https://api.cloudflare.com/client/v4/accounts \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | jq -r '.result[0].id // empty')
+          [ -n "$ACCOUNT_ID" ] || { echo "::error::Cannot read account."; exit 1; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
+
+      - name: Upload site files
+        run: |
+          npm install -g wrangler >/dev/null 2>&1
+          upload() { # $1=path $2=content-type
+            npx wrangler r2 object put "$BUCKET/site/$1" --file "$1" --content-type "$2" --remote
+          }
+          upload index.html text/html
+          upload css/main.css text/css
+          for f in js/*.js; do upload "$f" application/javascript; done
+          echo "## Dev preview deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://pub-46388c66e0644085b894123976534759.r2.dev/site/index.html" >> "$GITHUB_STEP_SUMMARY"
