@@ -76,7 +76,10 @@ const manifest = JSON.parse(
 let selected = manifest.assets.filter(
   (a) => opt.batch === "all" || a.batch === opt.batch,
 );
-if (opt.only) selected = selected.filter((a) => a.key.includes(opt.only));
+if (opt.only) {
+  const terms = opt.only.split(",").map((s) => s.trim()).filter(Boolean);
+  selected = selected.filter((a) => terms.some((t) => a.key.includes(t)));
+}
 selected = selected.slice(0, opt.limit);
 
 if (selected.length === 0) fail("No assets matched the given filters.");
