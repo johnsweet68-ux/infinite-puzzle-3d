@@ -9,7 +9,7 @@ on:
         options: [core, dressing, all]
         default: core
       only:
-        description: "Only generate keys containing this text (optional)"
+        description: "Only generate keys containing this text — comma-separate for several (optional)"
         type: string
         required: false
       limit:
@@ -18,6 +18,10 @@ on:
         required: false
       dry_run:
         description: "Dry run — validate prompts only, no credits used"
+        type: boolean
+        default: false
+      force:
+        description: "Force regenerate even if the asset already exists in R2"
         type: boolean
         default: false
 
@@ -101,6 +105,7 @@ jobs:
           [ -n "${{ inputs.only }}" ] && FLAGS="$FLAGS --only ${{ inputs.only }}"
           [ -n "${{ inputs.limit }}" ] && FLAGS="$FLAGS --limit ${{ inputs.limit }}"
           [ "${{ inputs.dry_run }}" = "true" ] && FLAGS="$FLAGS --dry-run"
+          [ "${{ inputs.force }}" = "true" ] && FLAGS="$FLAGS --no-skip-existing"
           node scripts/generate-assets.mjs $FLAGS
 
       - name: Commit licence log & catalog
