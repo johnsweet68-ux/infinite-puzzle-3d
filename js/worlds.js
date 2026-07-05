@@ -113,15 +113,17 @@ const WORLDS = {
 // ============================================
 
 function buildApartment(scene, shadowGenerator) {
+  // Step 1 pipeline: HDRI image-based lighting (biggest realism lever)
+  if (typeof setupApartmentEnvironment === 'function') setupApartmentEnvironment(scene);
+  const hemiL = scene.getLightByName('hemi');
+  if (hemiL) hemiL.intensity = 0.15;
+
   const WALL_COLOR = new BABYLON.Color3(0.85, 0.82, 0.78);
   const FLOOR_COLOR = new BABYLON.Color3(0.25, 0.22, 0.2);
   
   // Floor
   const floor = BABYLON.MeshBuilder.CreateGround('floor', { width: 12, height: 16 }, scene);
-  const floorMat = new BABYLON.PBRMaterial('floorMat', scene);
-  floorMat.albedoColor = FLOOR_COLOR;
-  floorMat.metallic = 0.1;
-  floorMat.roughness = 0.7;
+  const floorMat = pbrSurface(scene, 'floorMat', 'wood_floor_01', { uScale: 4, vScale: 5.3, roughness: 0.55 });
   floor.material = floorMat;
   floor.receiveShadows = true;
   floor.checkCollisions = true;
@@ -137,9 +139,11 @@ function buildApartment(scene, shadowGenerator) {
   ceiling.material = ceilMat;
   
   // Walls
-  createWall(scene, new BABYLON.Vector3(0, 1.6, -8), 12, 3.2, 0, WALL_COLOR, shadowGenerator);
-  createWall(scene, new BABYLON.Vector3(-6, 1.6, 0), 16, 3.2, Math.PI / 2, WALL_COLOR, shadowGenerator);
-  createWall(scene, new BABYLON.Vector3(6, 1.6, 0), 16, 3.2, -Math.PI / 2, WALL_COLOR, shadowGenerator);
+  const plasterMat = pbrSurface(scene, 'plasterMat', 'plaster_01', { uScale: 6, vScale: 1.8, roughness: 0.9 });
+  const wallB = createWall(scene, new BABYLON.Vector3(0, 1.6, -8), 12, 3.2, 0, WALL_COLOR, shadowGenerator);
+  const wallL = createWall(scene, new BABYLON.Vector3(-6, 1.6, 0), 16, 3.2, Math.PI / 2, WALL_COLOR, shadowGenerator);
+  const wallR = createWall(scene, new BABYLON.Vector3(6, 1.6, 0), 16, 3.2, -Math.PI / 2, WALL_COLOR, shadowGenerator);
+  wallB.material = plasterMat; wallL.material = plasterMat; wallR.material = plasterMat;
   
   // Window
   const windowFrame = BABYLON.MeshBuilder.CreateBox('window', { width: 2.5, height: 2, depth: 0.1 }, scene);
@@ -151,23 +155,19 @@ function buildApartment(scene, shadowGenerator) {
   windowMat.roughness = 0.1;
   windowFrame.material = windowMat;
   
-  // Sofa
-  createSofa(scene, new BABYLON.Vector3(-3, 0, -2), Math.PI * 0.1, shadowGenerator);
-  
-  // Coffee table
-  createCoffeeTable(scene, new BABYLON.Vector3(-2, 0, 0), shadowGenerator);
-  
-  // Bookshelf
-  createBookshelf(scene, new BABYLON.Vector3(5, 0, -4), -Math.PI / 2, shadowGenerator);
-  
-  // Lamp
-  createFloorLamp(scene, new BABYLON.Vector3(3, 0, -1), shadowGenerator);
-  
-  // Rug
-  const rug = BABYLON.MeshBuilder.CreateGround('rug', { width: 3, height: 2.5 }, scene);
-  rug.position = new BABYLON.Vector3(-2, 0.01, -1);
+  // GLB props from R2 (proof slice) — load-and-composite
+  const P = (x, y, z) => new BABYLON.Vector3(x, y, z);
+  loadAsset(scene, shadowGenerator, { key: 'hub/apartment/sofa_01', targetSize: { axis: 'width', meters: 2.1 }, position: P(-2.3, 0, -4.9), rotationY: Math.PI * 0.03 });
+  loadAsset(scene, shadowGenerator, { key: 'hub/apartment/armchair_01', targetSize: { axis: 'width', meters: 0.8 }, position: P(1.7, 0, -4.3), rotationY: -Math.PI * 0.3 });
+  loadAsset(scene, shadowGenerator, { key: 'hub/apartment/coffee_table_01', targetSize: { axis: 'width', meters: 1.1 }, position: P(-1.7, 0, -2.9), rotationY: 0, collide: false });
+  loadAsset(scene, shadowGenerator, { key: 'hub/apartment/bookshelf_01', targetSize: { axis: 'height', meters: 1.8 }, position: P(5.5, 0, -3.5), rotationY: -Math.PI / 2 });
+  loadAsset(scene, shadowGenerator, { key: 'hub/apartment/plant_01', targetSize: { axis: 'height', meters: 1.6 }, position: P(-5.1, 0, -6.9), rotationY: 0, collide: false });
+
+  // Rug (plane per asset pack — plain colour until a fabric surface set is ingested)
+  const rug = BABYLON.MeshBuilder.CreateGround('rug', { width: 3.4, height: 2.6 }, scene);
+  rug.position = new BABYLON.Vector3(-1.8, 0.01, -3.4);
   const rugMat = new BABYLON.PBRMaterial('rugMat', scene);
-  rugMat.albedoColor = new BABYLON.Color3(0.3, 0.25, 0.35);
+  rugMat.albedoColor = new BABYLON.Color3(0.45, 0.42, 0.38);
   rugMat.metallic = 0;
   rugMat.roughness = 0.95;
   rug.material = rugMat;
