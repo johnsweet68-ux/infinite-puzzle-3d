@@ -16,7 +16,7 @@
     {
       "key": "hub/apartment/sofa_01",
       "batch": "core",
-      "prompt": "A three-seat sofa with soft fabric upholstery in warm grey, low wooden legs, two loose back cushions",
+      "prompt": "A wide warm grey three-seat sofa, three seat cushions in a row, two loose warm grey back cushions resting against the backrest, soft fabric upholstery, low wooden legs",
       "targetSize": { "axis": "width", "meters": 2.1 }
     },
     {
