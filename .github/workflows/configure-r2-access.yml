@@ -1,0 +1,61 @@
+name: Configure R2 public access
+
+on:
+  workflow_dispatch:
+    inputs:
+      cors_origins:
+        description: "Comma-separated allowed origins for CORS (default: all origins, GET/HEAD only)"
+        type: string
+        required: false
+        default: "*"
+
+permissions: {}
+
+jobs:
+  configure:
+    name: Enable dev URL & CORS
+    runs-on: ubuntu-latest
+    env:
+      BUCKET: infinite-puzzle-assets
+    steps:
+      - name: Find account
+        id: cf
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          ACCOUNT_ID=$(curl -sf https://api.cloudflare.com/client/v4/accounts \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | jq -r '.result[0].id // empty')
+          [ -n "$ACCOUNT_ID" ] || { echo "::error::Cannot read account with this token."; exit 1; }
+          echo "account_id=$ACCOUNT_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Enable r2.dev managed domain
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT_ID: ${{ steps.cf.outputs.account_id }}
+        run: |
+          RESP=$(curl -s -X PUT \
+            "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/r2/buckets/$BUCKET/domains/managed" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{"enabled": true}')
+          echo "$RESP" | jq -e '.success' >/dev/null || { echo "::error::Enable failed: $(echo "$RESP" | jq -c .errors)"; exit 1; }
+          DOMAIN=$(echo "$RESP" | jq -r '.result.domain // "unknown"')
+          echo "## R2 public access" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Public dev URL: **https://$DOMAIN** (rate-limited; dev only — bind a custom domain for production)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Set CORS (GET/HEAD)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT_ID: ${{ steps.cf.outputs.account_id }}
+          ORIGINS: ${{ inputs.cors_origins }}
+        run: |
+          ORIGIN_JSON=$(echo "$ORIGINS" | jq -R 'split(",") | map(gsub("^\\s+|\\s+$";""))')
+          BODY=$(jq -n --argjson origins "$ORIGIN_JSON" '{rules:[{allowed:{origins:$origins,methods:["GET","HEAD"]},maxAgeSeconds:86400}]}')
+          RESP=$(curl -s -X PUT \
+            "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/r2/buckets/$BUCKET/cors" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "$BODY")
+          echo "$RESP" | jq -e '.success' >/dev/null || { echo "::error::CORS failed: $(echo "$RESP" | jq -c .errors)"; exit 1; }
+          echo "CORS rules set for origins: $ORIGINS (GET/HEAD)" >> "$GITHUB_STEP_SUMMARY"
