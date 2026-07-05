@@ -157,8 +157,8 @@ function buildApartment(scene, shadowGenerator) {
   
   // GLB props from R2 (proof slice) — load-and-composite
   const P = (x, y, z) => new BABYLON.Vector3(x, y, z);
-  loadAsset(scene, shadowGenerator, { key: 'hub/apartment/sofa_01', targetSize: { axis: 'width', meters: 2.1 }, position: P(-2.3, 0, -4.9), rotationY: Math.PI * 0.03 });
-  loadAsset(scene, shadowGenerator, { key: 'hub/apartment/armchair_01', targetSize: { axis: 'width', meters: 0.8 }, position: P(1.7, 0, -4.3), rotationY: -Math.PI * 0.3 });
+  loadAsset(scene, shadowGenerator, { key: 'hub/apartment/sofa_01', targetSize: { axis: 'width', meters: 2.1 }, position: P(-2.3, 0, -4.9), rotationY: Math.PI * 1.02 });
+  loadAsset(scene, shadowGenerator, { key: 'hub/apartment/armchair_01', targetSize: { axis: 'width', meters: 0.8 }, position: P(1.6, 0, -3.9), rotationY: Math.PI * 0.45 });
   loadAsset(scene, shadowGenerator, { key: 'hub/apartment/coffee_table_01', targetSize: { axis: 'width', meters: 1.1 }, position: P(-1.7, 0, -2.9), rotationY: 0, collide: false });
   loadAsset(scene, shadowGenerator, { key: 'hub/apartment/bookshelf_01', targetSize: { axis: 'height', meters: 1.8 }, position: P(5.5, 0, -3.5), rotationY: -Math.PI / 2 });
   loadAsset(scene, shadowGenerator, { key: 'hub/apartment/plant_01', targetSize: { axis: 'height', meters: 1.6 }, position: P(-5.1, 0, -6.9), rotationY: 0, collide: false });
