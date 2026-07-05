@@ -84,6 +84,193 @@
       },
       "thumbnail": "assets/thumbnails/hub_apartment_plant_01.png",
       "generatedAt": "2026-07-05T09:45:08.134Z"
+    },
+    "hub/apartment/floor_lamp_01.glb": {
+      "key": "hub/apartment/floor_lamp_01.glb",
+      "prompt": "A slim standing floor lamp, brushed brass stem, fabric drum shade, round weighted base",
+      "fullPrompt": "A slim standing floor lamp, brushed brass stem, fabric drum shade, round weighted base, modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+      "previewTaskId": "019f31f4-037a-7cd2-a0ab-f5388f92d49c",
+      "refineTaskId": "019f31f4-bb19-7cf5-a2e3-04d610b0cd0b",
+      "creditsUsed": 30,
+      "rawBytes": 11538868,
+      "optBytes": 1214152,
+      "overBudget": false,
+      "targetSize": {
+        "axis": "height",
+        "meters": 1.5
+      },
+      "thumbnail": "assets/thumbnails/hub_apartment_floor_lamp_01.png",
+      "generatedAt": "2026-07-05T11:07:56.677Z"
+    },
+    "hub/apartment/tv_01.glb": {
+      "key": "hub/apartment/tv_01.glb",
+      "prompt": "A modern flat-screen television, thin black bezel, on a small central stand",
+      "fullPrompt": "A modern flat-screen television, thin black bezel, on a small central stand, modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+      "previewTaskId": "019f31f4-0367-7e7c-87fd-a019e43cd377",
+      "refineTaskId": "019f31f4-f618-7df1-b869-eadfbb98c1b5",
+      "creditsUsed": 30,
+      "rawBytes": 11072292,
+      "optBytes": 592548,
+      "overBudget": false,
+      "targetSize": {
+        "axis": "width",
+        "meters": 1.2
+      },
+      "thumbnail": "assets/thumbnails/hub_apartment_tv_01.png",
+      "generatedAt": "2026-07-05T11:08:26.533Z"
+    },
+    "hub/apartment/media_console_01.glb": {
+      "key": "hub/apartment/media_console_01.glb",
+      "prompt": "A low media console cabinet, matte walnut, sliding doors, short splayed legs",
+      "fullPrompt": "A low media console cabinet, matte walnut, sliding doors, short splayed legs, modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+      "previewTaskId": "019f31f4-036d-7e7d-9f88-9c72da95aaa6",
+      "refineTaskId": "019f31f5-31ff-7d0c-824d-500efce1ba0e",
+      "creditsUsed": 30,
+      "rawBytes": 11904168,
+      "optBytes": 984176,
+      "overBudget": false,
+      "targetSize": {
+        "axis": "width",
+        "meters": 1.6
+      },
+      "thumbnail": "assets/thumbnails/hub_apartment_media_console_01.png",
+      "generatedAt": "2026-07-05T11:08:56.854Z"
+    },
+    "hub/apartment/kitchen_counter_01.glb": {
+      "key": "hub/apartment/kitchen_counter_01.glb",
+      "prompt": "A straight modern kitchen counter unit, matte cabinet doors, light stone worktop, integrated sink",
+      "fullPrompt": "A straight modern kitchen counter unit, matte cabinet doors, light stone worktop, integrated sink, modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+      "previewTaskId": "019f31f6-aa16-7d34-940d-aca4bf2e4f49",
+      "refineTaskId": "019f31f7-6182-7e55-af14-ac14774c7215",
+      "creditsUsed": 30,
+      "rawBytes": 9641800,
+      "optBytes": 675920,
+      "overBudget": false,
+      "targetSize": {
+        "axis": "width",
+        "meters": 2.4
+      },
+      "thumbnail": "assets/thumbnails/hub_apartment_kitchen_counter_01.png",
+      "generatedAt": "2026-07-05T11:10:33.990Z"
+    },
+    "hub/apartment/fridge_01.glb": {
+      "key": "hub/apartment/fridge_01.glb",
+      "prompt": "A tall freestanding refrigerator, brushed stainless steel, two doors",
+      "fullPrompt": "A tall freestanding refrigerator, brushed stainless steel, two doors, modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+      "previewTaskId": "019f31f7-9519-7e5d-89c1-003472470187",
+      "refineTaskId": "019f31f8-8890-7f9c-92d5-690870880009",
+      "creditsUsed": 30,
+      "rawBytes": 11850448,
+      "optBytes": 1098744,
+      "overBudget": false,
+      "targetSize": {
+        "axis": "height",
+        "meters": 1.8
+      },
+      "thumbnail": "assets/thumbnails/hub_apartment_fridge_01.png",
+      "generatedAt": "2026-07-05T11:11:50.488Z"
+    },
+    "hub/apartment/table_lamp_01.glb": {
+      "key": "hub/apartment/table_lamp_01.glb",
+      "prompt": "A small table lamp, ceramic base in muted teal, cream fabric shade",
+      "fullPrompt": "A small table lamp, ceramic base in muted teal, cream fabric shade, modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+      "previewTaskId": "019f31f8-c449-7d8b-afeb-63f946b7a720",
+      "refineTaskId": "019f31f9-c337-7fe5-b10e-7b6b3f1ca1a4",
+      "creditsUsed": 30,
+      "rawBytes": 12138000,
+      "optBytes": 707396,
+      "overBudget": false,
+      "targetSize": {
+        "axis": "height",
+        "meters": 0.5
+      },
+      "thumbnail": "assets/thumbnails/hub_apartment_table_lamp_01.png",
+      "generatedAt": "2026-07-05T11:14:11.797Z"
+    },
+    "hub/apartment/wall_art_01.glb": {
+      "key": "hub/apartment/wall_art_01.glb",
+      "prompt": "A single framed abstract painting, thin black frame, original muted abstract composition",
+      "fullPrompt": "A single framed abstract painting, thin black frame, original muted abstract composition, modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+      "previewTaskId": "019f31fa-3b6a-7ffd-b79a-c06aa5590e98",
+      "refineTaskId": "019f31fb-2c2e-7059-8cbe-0ed5f30e1cff",
+      "creditsUsed": 30,
+      "rawBytes": 10116748,
+      "optBytes": 635732,
+      "overBudget": false,
+      "targetSize": {
+        "axis": "width",
+        "meters": 0.8
+      },
+      "thumbnail": "assets/thumbnails/hub_apartment_wall_art_01.png",
+      "generatedAt": "2026-07-05T11:14:42.042Z"
+    },
+    "hub/apartment/coffee_machine_01.glb": {
+      "key": "hub/apartment/coffee_machine_01.glb",
+      "prompt": "A modern countertop coffee machine, matte black with stainless accents",
+      "fullPrompt": "A modern countertop coffee machine, matte black with stainless accents, modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+      "previewTaskId": "019f31f9-10b3-7eac-a309-33bd2efdf2f3",
+      "refineTaskId": "019f31fa-eda4-7036-93ae-8418595f9614",
+      "creditsUsed": 30,
+      "rawBytes": 24429468,
+      "optBytes": 1761476,
+      "overBudget": false,
+      "targetSize": {
+        "axis": "height",
+        "meters": 0.35
+      },
+      "thumbnail": "assets/thumbnails/hub_apartment_coffee_machine_01.png",
+      "generatedAt": "2026-07-05T11:16:15.460Z"
+    },
+    "hub/apartment/coat_rack_01.glb": {
+      "key": "hub/apartment/coat_rack_01.glb",
+      "prompt": "A freestanding coat rack, slim brass frame with a hanging coat and scarf",
+      "fullPrompt": "A freestanding coat rack, slim brass frame with a hanging coat and scarf, modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+      "previewTaskId": "019f31fc-d98a-70d7-8415-44c198c79fdc",
+      "refineTaskId": "019f31fd-928c-7e74-aa4a-264e99f99127",
+      "creditsUsed": 30,
+      "rawBytes": 13789820,
+      "optBytes": 1167564,
+      "overBudget": false,
+      "targetSize": {
+        "axis": "height",
+        "meters": 1.7
+      },
+      "thumbnail": "assets/thumbnails/hub_apartment_coat_rack_01.png",
+      "generatedAt": "2026-07-05T11:17:36.304Z"
+    },
+    "hub/apartment/side_table_01.glb": {
+      "key": "hub/apartment/side_table_01.glb",
+      "prompt": "A small round side table, oak top, single turned pedestal leg",
+      "fullPrompt": "A small round side table, oak top, single turned pedestal leg, modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+      "previewTaskId": "019f31fc-6355-7e2d-b802-c82ade1fa3d2",
+      "refineTaskId": "019f31fd-56d4-7105-a347-a3dd8e0cce71",
+      "creditsUsed": 30,
+      "rawBytes": 12167388,
+      "optBytes": 1055392,
+      "overBudget": false,
+      "targetSize": {
+        "axis": "width",
+        "meters": 0.5
+      },
+      "thumbnail": "assets/thumbnails/hub_apartment_side_table_01.png",
+      "generatedAt": "2026-07-05T11:17:40.408Z"
+    },
+    "hub/apartment/books_stack_01.glb": {
+      "key": "hub/apartment/books_stack_01.glb",
+      "prompt": "A small stack of three closed hardback books, muted cloth covers",
+      "fullPrompt": "A small stack of three closed hardback books, muted cloth covers, modern lived-in apartment, mid-century modern styling, muted natural palette, warm neutrals with muted teal accent, realistic PBR materials, soft matte finish, single object, real-world scale, game-ready, clean topology, neutral pose, plain background",
+      "previewTaskId": "019f31fe-4678-7e90-8a0b-ded8abbb0142",
+      "refineTaskId": "019f31ff-ce22-717d-8873-1890a11e4680",
+      "creditsUsed": 30,
+      "rawBytes": 18752860,
+      "optBytes": 1491388,
+      "overBudget": false,
+      "targetSize": {
+        "axis": "width",
+        "meters": 0.3
+      },
+      "thumbnail": "assets/thumbnails/hub_apartment_books_stack_01.png",
+      "generatedAt": "2026-07-05T11:21:18.759Z"
     }
   }
 }
