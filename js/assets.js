@@ -11,9 +11,19 @@ function assetsWithTimeout(promise, ms, label) {
   ]);
 }
 
+// Promises for every GLB requested this scene — game.js waits on these before
+// hiding the loading screen.
+const ASSET_LOADS = [];
+
 // Load a GLB from R2: auto-scale to the manifest target size, drop to floor,
 // register shadows and collisions. Falls back to a plain box on failure.
-async function loadAsset(scene, shadowGenerator, opts) {
+function loadAsset(scene, shadowGenerator, opts) {
+  const p = _loadAssetInner(scene, shadowGenerator, opts);
+  ASSET_LOADS.push(p);
+  return p;
+}
+
+async function _loadAssetInner(scene, shadowGenerator, opts) {
   const { key, targetSize, position, rotationY = 0, collide = true } = opts;
   const url = ASSETS_BASE + '/' + key + '.glb';
   try {
