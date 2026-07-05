@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CHAMBER — The Drowned Atrium</title>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;background:#000;height:100%;}
+  #render{width:100vw;height:100vh;display:block;touch-action:none;outline:none;}
+  #cap{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+    font-family:ui-monospace,Menlo,Consolas,monospace;color:rgba(180,230,220,0.5);
+    letter-spacing:0.26em;font-size:11px;text-transform:uppercase;pointer-events:none;
+    user-select:none;text-shadow:0 0 10px rgba(0,0,0,0.85);white-space:nowrap;transition:opacity 1s;
+  }
+  #title{
+    position:fixed;top:28px;left:50%;transform:translateX(-50%);
+    font-family:ui-monospace,monospace;color:rgba(210,225,220,0.62);
+    letter-spacing:0.46em;font-size:13px;text-transform:uppercase;pointer-events:none;
+    user-select:none;text-shadow:0 0 16px rgba(0,0,0,0.8);
+  }
+  #loading{
+    position:fixed;inset:0;background:#04060a;z-index:50;display:flex;
+    align-items:center;justify-content:center;flex-direction:column;
+    font-family:ui-monospace,monospace;color:#6fd8cf;letter-spacing:0.4em;
+    transition:opacity 1.6s ease;text-align:center;
+  }
+  #bar{width:260px;height:2px;background:rgba(111,216,207,0.15);margin-top:22px;}
+  #fill{width:0%;height:100%;background:#6fd8cf;box-shadow:0 0 14px #6fd8cf;transition:width .3s;}
+  #sub{font-size:10px;letter-spacing:0.22em;color:rgba(111,216,207,0.4);margin-top:16px;max-width:80vw;}
+</style>
+</head>
+<body>
+<canvas id="render"></canvas>
+<div id="title">The Drowned Atrium</div>
+<div id="cap">WASD move · mouse look · click to capture mouse</div>
+<div id="loading">
+  <div>DESCENDING INTO THE CHAMBER</div>
+  <div id="bar"><div id="fill"></div></div>
+  <div id="sub">loading environment — this one is large, give it a moment</div>
+</div>
+
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var fillEl = document.getElementById('fill');
+  var subEl  = document.getElementById('sub');
+  function setProgress(p){ fillEl.style.width = Math.min(100,p) + '%'; }
+
+  var TEAL = new BABYLON.Color3(0.16, 0.92, 0.85);
+  var RED  = new BABYLON.Color3(0.90, 0.12, 0.14);
+  var COLD = new BABYLON.Color3(0.55, 0.62, 0.85);
+
+  var canvas = document.getElementById('render');
+  var engine = new BABYLON.Engine(canvas, true, { stencil:true, antialias:true });
+  var scene  = new BABYLON.Scene(engine);
+  scene.clearColor = new BABYLON.Color3(0.01, 0.02, 0.035);
+  scene.collisionsEnabled = true;
+
+  // corrupted haze
+  scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
+  scene.fogColor = new BABYLON.Color3(0.03, 0.06, 0.08);
+  scene.fogDensity = 0.032;
+  setProgress(8);
+
+  // ── HDR image-based lighting (dim / nocturnal) ──
+  var env = BABYLON.CubeTexture.CreateFromPrefilteredData(
+    'https://assets.babylonjs.com/environments/night.env', scene);
+  scene.environmentTexture = env;
+  scene.environmentIntensity = 0.65;
+  var skybox = scene.createDefaultSkybox(env, true, 2000, 0.4);
+  setProgress(18);
+
+  // ── first-person camera ──
+  var camera = new BABYLON.UniversalCamera('fps', new BABYLON.Vector3(-9, 1.8, 0), scene);
+  camera.setTarget(new BABYLON.Vector3(0, 1.7, 0));
+  camera.attachControl(canvas, true);
+  camera.speed = 0.28;
+  camera.angularSensibility = 3600;
+  camera.minZ = 0.05;
+  camera.fov = 0.98;
+  camera.keysUp=[87,38]; camera.keysDown=[83,40]; camera.keysLeft=[65,37]; camera.keysRight=[68,39];
+  camera.checkCollisions = true;
+  camera.applyGravity = false;
+  camera.ellipsoid = new BABYLON.Vector3(0.7, 0.9, 0.7);
+  canvas.addEventListener('click', function(){ if (canvas.requestPointerLock) canvas.requestPointerLock(); });
+
+  // ── lights: cold moonlight + corruption glow ──
+  var ambient = new BABYLON.HemisphericLight('amb', new BABYLON.Vector3(0,1,0), scene);
+  ambient.intensity = 0.18; ambient.diffuse = COLD; ambient.groundColor = new BABYLON.Color3(0.06,0.03,0.04);
+
+  var moon = new BABYLON.DirectionalLight('moon', new BABYLON.Vector3(-0.5,-0.85,0.18), scene);
+  moon.position = new BABYLON.Vector3(20, 40, -8);
+  moon.intensity = 2.4; moon.diffuse = new BABYLON.Color3(0.75,0.82,1.0);
+
+  var glowTeal = new BABYLON.PointLight('gt', new BABYLON.Vector3(0, 3, 0), scene);
+  glowTeal.diffuse = TEAL; glowTeal.intensity = 22; glowTeal.range = 24;
+  var glowRed = new BABYLON.PointLight('gr', new BABYLON.Vector3(-6, 6, 4), scene);
+  glowRed.diffuse = RED; glowRed.intensity = 10; glowRed.range = 26;
+  var glowRed2 = new BABYLON.PointLight('gr2', new BABYLON.Vector3(8, 5, -3), scene);
+  glowRed2.diffuse = RED; glowRed2.intensity = 8; glowRed2.range = 22;
+
+  var shadow = new BABYLON.ShadowGenerator(1024, moon);
+  shadow.usePercentageCloserFiltering = true;
+  shadow.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
+  shadow.darkness = 0.35;
+  setProgress(26);
+
+  // ── central monolith: the chamber's focal "puzzle" anchor ──
+  var mono = BABYLON.MeshBuilder.CreatePolyhedron('mono', {type:0, size:0.0}, scene); // placeholder replaced below
+  mono.dispose();
+  var monolith = BABYLON.MeshBuilder.CreateCylinder('monolith',
+      {height:5, diameterTop:0.1, diameterBottom:1.1, tessellation:4}, scene);
+  monolith.position = new BABYLON.Vector3(0, 2.5, 0);
+  monolith.rotation.y = Math.PI/4;
+  var monoMat = new BABYLON.PBRMaterial('monom', scene);
+  monoMat.albedoColor = new BABYLON.Color3(0.02,0.03,0.04);
+  monoMat.metallic = 0.7; monoMat.roughness = 0.25;
+  monoMat.emissiveColor = TEAL.scale(0.25);
+  monolith.material = monoMat;
+  monolith.checkCollisions = true;
+  var monoLight = new BABYLON.PointLight('ml', new BABYLON.Vector3(0,3,0), scene);
+  monoLight.diffuse = TEAL; monoLight.intensity = 14; monoLight.range = 16;
+  setProgress(32);
+
+  // ── corruption particles: drifting spores + faint code motes ──
+  var dotTex = (function(){
+    var t=new BABYLON.DynamicTexture('d',64,scene,false); var c=t.getContext();
+    var g=c.createRadialGradient(32,32,0,32,32,32);
+    g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(0.4,'rgba(255,255,255,0.5)');
+    g.addColorStop(1,'rgba(255,255,255,0)'); c.fillStyle=g; c.fillRect(0,0,64,64);
+    t.update(); t.hasAlpha=true; return t;
+  })();
+
+  var spores = new BABYLON.ParticleSystem('spores', 700, scene);
+  spores.particleTexture = dotTex;
+  spores.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
+  spores.emitter = new BABYLON.Vector3(0,12,0);
+  spores.minEmitBox = new BABYLON.Vector3(-16,-2,-7);
+  spores.maxEmitBox = new BABYLON.Vector3(16,4,7);
+  spores.color1 = new BABYLON.Color4(0.7,0.95,0.9,0.5);
+  spores.color2 = new BABYLON.Color4(0.9,0.85,0.7,0.3);
+  spores.colorDead = new BABYLON.Color4(0.2,0.4,0.4,0);
+  spores.minSize=0.03; spores.maxSize=0.11;
+  spores.minLifeTime=8; spores.maxLifeTime=18;
+  spores.emitRate=55;
+  spores.direction1=new BABYLON.Vector3(-0.1,-0.15,-0.05);
+  spores.direction2=new BABYLON.Vector3(0.1,-0.05,0.05);
+  spores.minEmitPower=0.05; spores.maxEmitPower=0.2;
+  spores.gravity=new BABYLON.Vector3(0,-0.08,0);
+  spores.start();
+
+  var motes = new BABYLON.ParticleSystem('motes', 500, scene);
+  motes.particleTexture = dotTex;
+  motes.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
+  motes.emitter = new BABYLON.Vector3(0,4,0);
+  motes.minEmitBox = new BABYLON.Vector3(-16,-3,-7);
+  motes.maxEmitBox = new BABYLON.Vector3(16,8,7);
+  motes.color1 = new BABYLON.Color4(0.2,0.9,0.6,0.35);
+  motes.color2 = new BABYLON.Color4(0.1,0.7,0.9,0.2);
+  motes.minSize=0.02; motes.maxSize=0.06;
+  motes.minLifeTime=6; motes.maxLifeTime=12;
+  motes.emitRate=45;
+  motes.direction1=new BABYLON.Vector3(-0.05,0.1,-0.05);
+  motes.direction2=new BABYLON.Vector3(0.05,0.2,0.05);
+  motes.minEmitPower=0.05; motes.maxEmitPower=0.15;
+  motes.start();
+  setProgress(40);
+
+  // ── POST-PROCESSING ──
+  try {
+    if (BABYLON.SSAO2RenderingPipeline && BABYLON.SSAO2RenderingPipeline.IsSupported){
+      var ssao = new BABYLON.SSAO2RenderingPipeline('ssao', scene, { ssaoRatio:0.7, blurRatio:1 }, [camera]);
+      ssao.radius = 1.1; ssao.totalStrength = 1.0; ssao.expensiveBlur = true;
+      ssao.samples = 12; ssao.maxZ = 160; ssao.minZAspect = 0.3;
+    }
+  } catch(e){ console.warn('SSAO skipped', e); }
+
+  var pipe = new BABYLON.DefaultRenderingPipeline('pipe', true, scene, [camera]);
+  pipe.fxaaEnabled = true;
+  pipe.bloomEnabled = true;
+  pipe.bloomThreshold = 0.65;
+  pipe.bloomWeight = 0.5;
+  pipe.bloomKernel = 64;
+  pipe.imageProcessing.toneMappingEnabled = true;
+  pipe.imageProcessing.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+  pipe.imageProcessing.exposure = 1.1;
+  pipe.imageProcessing.contrast = 1.3;
+  pipe.imageProcessing.vignetteEnabled = true;
+  pipe.imageProcessing.vignetteWeight = 3.2;
+  pipe.imageProcessing.vignetteColor = new BABYLON.Color4(0,0,0,1);
+  pipe.grainEnabled = true; pipe.grain.intensity = 7; pipe.grain.animated = true;
+  pipe.chromaticAberrationEnabled = true;
+  pipe.chromaticAberration.aberrationAmount = 9;
+  pipe.chromaticAberration.radialIntensity = 0.7;
+  setProgress(46);
+
+  // god-ray shafts from the moon through the open roof
+  try {
+    var sunDisc = BABYLON.MeshBuilder.CreatePlane('sund', {size:40}, scene);
+    sunDisc.position = new BABYLON.Vector3(28, 55, -10);
+    sunDisc.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+    var sdm = new BABYLON.StandardMaterial('sdm', scene);
+    sdm.emissiveColor = new BABYLON.Color3(0.7,0.8,1.0);
+    sdm.disableLighting = true;
+    sunDisc.material = sdm; sunDisc.isPickable = false;
+    var vls = new BABYLON.VolumetricLightScatteringPostProcess('god', 1.0, camera, sunDisc, 70,
+        BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
+    vls.exposure = 0.18; vls.decay = 0.965; vls.weight = 0.45; vls.density = 0.92;
+  } catch(e){ console.warn('god rays skipped', e); }
+  setProgress(52);
+
+  // ─────────────────────────────────────────────────────────
+  //  LOAD THE REAL SPONZA ENVIRONMENT
+  // ─────────────────────────────────────────────────────────
+  var ROOT = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Sponza/glTF/';
+  var FILE = 'Sponza.gltf';
+  var revealed = false;
+  function reveal(){
+    if (revealed) return; revealed = true;
+    setProgress(100);
+    setTimeout(function(){
+      var l=document.getElementById('loading'); l.style.opacity='0';
+      setTimeout(function(){ l.style.display='none'; }, 1600);
+    }, 500);
+  }
+  setTimeout(reveal, 45000); // generous safety — Sponza is a big download
+
+  BABYLON.SceneLoader.ImportMesh(null, ROOT, FILE, scene,
+    function (meshes) {
+      subEl.textContent = 'corrupting the space';
+      setProgress(94);
+      meshes.forEach(function(m){
+        if (m.getTotalVertices && m.getTotalVertices() > 0){
+          m.checkCollisions = true;
+          m.receiveShadows = true;
+          shadow.addShadowCaster(m);
+        }
+      });
+      // build a collision/selection octree so walking stays smooth
+      try { scene.createOrUpdateSelectionOctree(); } catch(e){}
+      reveal();
+    },
+    function (evt) {
+      if (evt && evt.lengthComputable){
+        setProgress(52 + (evt.loaded/evt.total)*40);
+      }
+    },
+    function (scene, msg) {
+      console.warn('Sponza load failed:', msg);
+      subEl.textContent = 'environment unreachable — showing void only';
+      // fallback: a stone floor so it's not empty
+      var f = BABYLON.MeshBuilder.CreateGround('f', {width:60,height:30}, scene);
+      var fm = new BABYLON.PBRMaterial('fm', scene);
+      fm.albedoColor = new BABYLON.Color3(0.05,0.05,0.06); fm.metallic=0.1; fm.roughness=0.8;
+      f.material = fm; f.receiveShadows = true; f.checkCollisions = true;
+      reveal();
+    }
+  );
+
+  // ── animation loop ──
+  var t = 0;
+  scene.registerBeforeRender(function(){
+    var dt = engine.getDeltaTime()/1000; t += dt;
+    if (camera.position.y !== 1.8) camera.position.y = 1.8; // keep eye level (flat floor)
+
+    // corruption lights breathe / flicker
+    glowTeal.intensity = 20 + Math.sin(t*1.4)*6;
+    glowRed.intensity  = 9  + Math.sin(t*0.9+1)*4 + (Math.random()<0.03? 6:0);
+    glowRed2.intensity = 7  + Math.sin(t*1.1+2)*3;
+
+    // monolith pulses and slowly turns
+    var pulse = 0.2 + Math.sin(t*1.7)*0.12;
+    monoMat.emissiveColor = TEAL.scale(0.15 + pulse);
+    monoLight.intensity = 12 + Math.sin(t*1.7)*5;
+    monolith.rotation.y += dt*0.15;
+    monolith.position.y = 2.5 + Math.sin(t*0.7)*0.08;
+  });
+
+  engine.runRenderLoop(function(){ scene.render(); });
+  window.addEventListener('resize', function(){ engine.resize(); });
+
+  setTimeout(function(){ var c=document.getElementById('cap'); if(c) c.style.opacity='0.2'; }, 11000);
+  console.log('[BABYLON] Chamber test · v' + BABYLON.Engine.Version);
+})();
+</script>
+</body>
+</html>

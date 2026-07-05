@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PIPELINE TEST — Real Assets in a Chamber</title>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;background:#000;height:100%;}
+  #render{width:100vw;height:100vh;display:block;touch-action:none;outline:none;}
+  #cap{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+    font-family:ui-monospace,Menlo,Consolas,monospace;color:rgba(190,205,220,0.5);
+    letter-spacing:0.26em;font-size:11px;text-transform:uppercase;pointer-events:none;
+    user-select:none;text-shadow:0 0 10px rgba(0,0,0,0.85);white-space:nowrap;transition:opacity 1s;
+  }
+  #title{
+    position:fixed;top:26px;left:50%;transform:translateX(-50%);
+    font-family:ui-monospace,monospace;color:rgba(200,210,220,0.6);
+    letter-spacing:0.4em;font-size:12px;text-transform:uppercase;pointer-events:none;
+    user-select:none;text-shadow:0 0 16px rgba(0,0,0,0.8);text-align:center;
+  }
+  #loading{
+    position:fixed;inset:0;background:#05070a;z-index:50;display:flex;
+    align-items:center;justify-content:center;flex-direction:column;
+    font-family:ui-monospace,monospace;color:#7fb0d8;letter-spacing:0.4em;
+    transition:opacity 1.4s ease;text-align:center;
+  }
+  #bar{width:250px;height:2px;background:rgba(127,176,216,0.15);margin-top:22px;}
+  #fill{width:0%;height:100%;background:#7fb0d8;box-shadow:0 0 14px #7fb0d8;transition:width .3s;}
+  #sub{font-size:10px;letter-spacing:0.22em;color:rgba(127,176,216,0.4);margin-top:16px;max-width:80vw;}
+</style>
+</head>
+<body>
+<canvas id="render"></canvas>
+<div id="title">Pipeline Test — real furniture, loaded live</div>
+<div id="cap">WASD move · mouse look · click to capture · click the breach</div>
+<div id="loading">
+  <div>ASSEMBLING THE CHAMBER</div>
+  <div id="bar"><div id="fill"></div></div>
+  <div id="sub">pulling real assets from the library</div>
+</div>
+
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var fillEl=document.getElementById('fill'), subEl=document.getElementById('sub');
+  function setProgress(p){ fillEl.style.width=Math.min(100,p)+'%'; }
+
+  var canvas=document.getElementById('render');
+  var engine=new BABYLON.Engine(canvas,true,{stencil:true,antialias:true});
+  var scene=new BABYLON.Scene(engine);
+  scene.clearColor=new BABYLON.Color3(0.01,0.018,0.026);
+  scene.collisionsEnabled=true;
+  scene.fogMode=BABYLON.Scene.FOGMODE_EXP2;
+  scene.fogColor=new BABYLON.Color3(0.04,0.07,0.09);
+  scene.fogDensity=0.045;
+
+  var COLD=new BABYLON.Color3(0.55,0.68,0.95);
+  var GATE=new BABYLON.Color3(1.0,0.35,0.15);
+  setProgress(8);
+
+  // ── HDR IBL — this is what grounds the real furniture ──
+  var env=BABYLON.CubeTexture.CreateFromPrefilteredData('https://assets.babylonjs.com/environments/night.env',scene);
+  scene.environmentTexture=env;
+  scene.environmentIntensity=0.5;
+  setProgress(18);
+
+  // ── grimy PBR shell texture ──
+  function grime(r,g,b,planks){
+    var S=512,t=new BABYLON.DynamicTexture('gr',{width:S,height:S},scene,true),c=t.getContext();
+    c.fillStyle='rgb('+r+','+g+','+b+')';c.fillRect(0,0,S,S);
+    for(var k=0;k<70;k++){var x=Math.random()*S,w=2+Math.random()*10;c.fillStyle='rgba(0,0,0,'+(0.02+Math.random()*0.06)+')';c.fillRect(x,0,w,S);}
+    for(var b2=0;b2<120;b2++){var bx=Math.random()*S,by=Math.random()*S,br=8+Math.random()*40,gg=c.createRadialGradient(bx,by,0,bx,by,br);gg.addColorStop(0,'rgba(0,0,0,'+(0.05+Math.random()*0.1)+')');gg.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=gg;c.fillRect(bx-br,by-br,br*2,br*2);}
+    var img=c.getImageData(0,0,S,S),d=img.data;for(var i=0;i<d.length;i+=4){var n=(Math.random()-0.5)*20;d[i]+=n;d[i+1]+=n;d[i+2]+=n;}c.putImageData(img,0,0);
+    if(planks){c.strokeStyle='rgba(0,0,0,0.4)';c.lineWidth=2;for(var p=0;p<=8;p++){var y=p*S/8;c.beginPath();c.moveTo(0,y);c.lineTo(S,y);c.stroke();}}
+    t.update();return t;
+  }
+  var wallMat=new BABYLON.PBRMaterial('wall',scene);
+  wallMat.albedoTexture=grime(74,82,76,false); wallMat.albedoTexture.uScale=2;
+  wallMat.metallic=0; wallMat.roughness=0.92;
+  var floorMat=new BABYLON.PBRMaterial('floorm',scene);
+  floorMat.albedoTexture=grime(54,48,42,true); floorMat.albedoTexture.uScale=3; floorMat.albedoTexture.vScale=3;
+  floorMat.metallic=0.1; floorMat.roughness=0.7;
+  var trimMat=new BABYLON.PBRMaterial('trim',scene);
+  trimMat.albedoColor=new BABYLON.Color3(0.09,0.09,0.08); trimMat.metallic=0.1; trimMat.roughness=0.6;
+  setProgress(26);
+
+  // ── ROOM SHELL ──
+  var W=10,H=4,D=13;
+  function wall(name,w,h,pos,rotY){var m=BABYLON.MeshBuilder.CreatePlane(name,{width:w,height:h,sideOrientation:BABYLON.Mesh.DOUBLESIDE},scene);m.position=pos;if(rotY)m.rotation.y=rotY;m.material=wallMat;m.receiveShadows=true;m.checkCollisions=true;return m;}
+  var floor=BABYLON.MeshBuilder.CreateGround('floor',{width:W,height:D},scene);
+  floor.material=floorMat;floor.receiveShadows=true;floor.checkCollisions=true;
+  var ceil=BABYLON.MeshBuilder.CreateGround('ceil',{width:W,height:D},scene);ceil.position.y=H;ceil.rotation.x=Math.PI;ceil.material=wallMat;
+  wall('back',W,H,new BABYLON.Vector3(0,H/2,-D/2),0);
+  wall('front',W,H,new BABYLON.Vector3(0,H/2,D/2),Math.PI);
+  wall('left',D,H,new BABYLON.Vector3(-W/2,H/2,0),Math.PI/2);
+  var doorW=2.2,doorH=2.8;
+  wall('ra',(D-doorW)/2,H,new BABYLON.Vector3(W/2,H/2,-(doorW/2+(D-doorW)/4)),-Math.PI/2);
+  wall('rb',(D-doorW)/2,H,new BABYLON.Vector3(W/2,H/2,(doorW/2+(D-doorW)/4)),-Math.PI/2);
+  wall('rc',doorW,H-doorH,new BABYLON.Vector3(W/2,doorH+(H-doorH)/2,0),-Math.PI/2);
+  var hall=BABYLON.MeshBuilder.CreateBox('hall',{width:3,height:doorH,depth:2.4},scene);hall.position=new BABYLON.Vector3(W/2+1.5,doorH/2,0);
+  var hm=new BABYLON.PBRMaterial('hm',scene);hm.albedoColor=new BABYLON.Color3(0.02,0.025,0.03);hm.backFaceCulling=false;hm.metallic=0;hm.roughness=1;hall.material=hm;
+  // window + cold light beyond
+  var winGlow=BABYLON.MeshBuilder.CreatePlane('wg',{width:2.2,height:1.6},scene);winGlow.position=new BABYLON.Vector3(-2.5,2.2,D/2-0.13);
+  var wgm=new BABYLON.PBRMaterial('wgm',scene);wgm.emissiveColor=COLD.scale(0.9);wgm.albedoColor=new BABYLON.Color3(0,0,0);winGlow.material=wgm;
+  var winFrame=BABYLON.MeshBuilder.CreateBox('wf',{width:2.6,height:2.0,depth:0.15},scene);winFrame.position=new BABYLON.Vector3(-2.5,2.2,D/2-0.05);winFrame.material=trimMat;
+  setProgress(34);
+
+  // ── background props stay boxes (this is fine — they're not hero pieces) ──
+  var propMat=new BABYLON.PBRMaterial('pm',scene);propMat.albedoColor=new BABYLON.Color3(0.06,0.06,0.07);propMat.metallic=0.1;propMat.roughness=0.8;
+  var shadowCasters=[];
+  function boxProp(n,w,h,dep,pos){var m=BABYLON.MeshBuilder.CreateBox(n,{width:w,height:h,depth:dep},scene);m.position=pos;m.material=propMat;m.checkCollisions=true;shadowCasters.push(m);return m;}
+  var table=boxProp('tbl',1.6,0.5,0.8,new BABYLON.Vector3(2.4,0.25,1.2));   // coffee table (artifact goes on top)
+  var stand=boxProp('std',1.4,0.6,0.6,new BABYLON.Vector3(-3,0.3,2));       // tv stand
+  var tv=boxProp('tv',1.1,0.9,0.8,new BABYLON.Vector3(-3,1.05,2));
+  var screen=BABYLON.MeshBuilder.CreatePlane('scr',{width:0.85,height:0.65},scene);screen.position=new BABYLON.Vector3(-3,1.1,2.41);
+  var scrMat=new BABYLON.PBRMaterial('scrm',scene);scrMat.emissiveColor=new BABYLON.Color3(0.3,0.4,0.5);scrMat.albedoColor=new BABYLON.Color3(0,0,0);screen.material=scrMat;
+
+  // ── glow layer for emissive corruption ──
+  var glow=new BABYLON.GlowLayer('glow',scene,{blurKernelSize:48});glow.intensity=1.0;
+
+  // ── string lights ──
+  var bulbColors=[new BABYLON.Color3(1,0.2,0.15),new BABYLON.Color3(0.2,0.9,0.3),new BABYLON.Color3(1,0.8,0.2),new BABYLON.Color3(0.25,0.5,1),new BABYLON.Color3(1,0.4,0.7)];
+  var bulbs=[];
+  function festoon(anchors){for(var s=0;s<anchors.length-1;s++){var a=anchors[s],b=anchors[s+1],seg=10,pts=[];for(var i=0;i<=seg;i++){var f=i/seg,x=a.x+(b.x-a.x)*f,y=a.y+(b.y-a.y)*f-Math.sin(f*Math.PI)*0.5,z=a.z+(b.z-a.z)*f;pts.push(new BABYLON.Vector3(x,y,z));if(i>0&&i<seg&&i%2===0){var bulb=BABYLON.MeshBuilder.CreateSphere('bulb',{diameter:0.16,segments:6},scene);bulb.position=new BABYLON.Vector3(x,y-0.09,z);var bm=new BABYLON.PBRMaterial('bm',scene);var col=bulbColors[bulbs.length%bulbColors.length];bm.emissiveColor=col;bm.albedoColor=col.scale(0.2);bulb.material=bm;bulbs.push({mat:bm,base:col,ph:Math.random()*6.28,fl:Math.random()<0.35});}}var wire=BABYLON.MeshBuilder.CreateTube('wire',{path:pts,radius:0.012,tessellation:4},scene);var wm=new BABYLON.PBRMaterial('wm',scene);wm.albedoColor=new BABYLON.Color3(0.02,0.02,0.02);wire.material=wm;}}
+  festoon([new BABYLON.Vector3(-W/2+0.1,3.3,-D/2+0.5),new BABYLON.Vector3(-1,3.1,-D/2+0.3),new BABYLON.Vector3(2,3.3,-D/2+0.4),new BABYLON.Vector3(W/2-0.1,3.0,-D/2+0.5)]);
+  festoon([new BABYLON.Vector3(-W/2+0.3,3.2,-4),new BABYLON.Vector3(-W/2+0.4,3.3,0),new BABYLON.Vector3(-W/2+0.2,3.1,4)]);
+  setProgress(42);
+
+  // ── breach + vines ──
+  var breach=BABYLON.MeshBuilder.CreateDisc('breach',{radius:1.4,tessellation:24},scene);breach.position=new BABYLON.Vector3(1.5,2,-D/2+0.12);
+  var bp=breach.getVerticesData(BABYLON.VertexBuffer.PositionKind);for(var v=0;v<bp.length;v+=3){bp[v+2]+=(Math.random()-0.5)*0.25;}breach.updateVerticesData(BABYLON.VertexBuffer.PositionKind,bp);
+  var breachMat=new BABYLON.PBRMaterial('brm',scene);breachMat.emissiveColor=GATE;breachMat.albedoColor=new BABYLON.Color3(0.2,0.05,0.02);breach.material=breachMat;
+  var breachLight=new BABYLON.PointLight('bl',new BABYLON.Vector3(1.5,2,-D/2+1),scene);breachLight.diffuse=GATE;breachLight.intensity=16;breachLight.range=14;
+  var vineMat=new BABYLON.PBRMaterial('vm',scene);vineMat.albedoColor=new BABYLON.Color3(0.04,0.05,0.04);vineMat.emissiveColor=new BABYLON.Color3(0.06,0.02,0.02);vineMat.metallic=0.2;vineMat.roughness=0.6;
+  function vine(start,dir,steps){var pts=[start.clone()],p=start.clone(),d=dir.clone();for(var i=0;i<steps;i++){d.x+=(Math.random()-0.5)*0.5;d.y+=(Math.random()-0.5)*0.35;d.z+=(Math.random()-0.5)*0.1;d.normalize();p=p.add(d.scale(0.5));p.z=Math.max(-D/2+0.08,p.z);pts.push(p.clone());}var vt=BABYLON.MeshBuilder.CreateTube('vine',{path:pts,radius:0.06,tessellation:6,cap:BABYLON.Mesh.CAP_ALL},scene);vt.material=vineMat;shadowCasters.push(vt);}
+  for(var vv=0;vv<7;vv++){var ang=(vv/7)*Math.PI*2;vine(new BABYLON.Vector3(1.5,2,-D/2+0.15),new BABYLON.Vector3(Math.cos(ang),Math.sin(ang)*0.6,0.15),10+((Math.random()*8)|0));}
+  vine(new BABYLON.Vector3(1.5,0.06,-D/2+0.4),new BABYLON.Vector3(0.2,0,1),16);
+  setProgress(48);
+
+  // ── lights ──
+  var ambient=new BABYLON.HemisphericLight('amb',new BABYLON.Vector3(0,1,0),scene);ambient.intensity=0.12;ambient.diffuse=COLD;ambient.groundColor=new BABYLON.Color3(0.04,0.03,0.03);
+  var winLight=new BABYLON.PointLight('wl',new BABYLON.Vector3(-2.5,2.4,D/2-1),scene);winLight.diffuse=COLD;winLight.intensity=7;winLight.range=16;
+  // swinging bare bulb (dynamic shadows)
+  var bareBulb=BABYLON.MeshBuilder.CreateSphere('bare',{diameter:0.2,segments:8},scene);bareBulb.position=new BABYLON.Vector3(0,H-1.15,1);
+  var bbm=new BABYLON.PBRMaterial('bbm',scene);bbm.emissiveColor=new BABYLON.Color3(1,0.85,0.5);bbm.albedoColor=new BABYLON.Color3(0,0,0);bareBulb.material=bbm;
+  var bulbSpot=new BABYLON.SpotLight('bs',new BABYLON.Vector3(0,H-1.15,1),new BABYLON.Vector3(0,-1,0),Math.PI/1.4,4,scene);bulbSpot.diffuse=new BABYLON.Color3(1,0.88,0.6);bulbSpot.intensity=20;
+  var shadow=new BABYLON.ShadowGenerator(1024,bulbSpot);shadow.usePercentageCloserFiltering=true;shadow.filteringQuality=BABYLON.ShadowGenerator.QUALITY_MEDIUM;shadow.darkness=0.5;
+  setProgress(54);
+
+  // ── spores ──
+  var dotTex=(function(){var t=new BABYLON.DynamicTexture('d',64,scene,false),c=t.getContext(),g=c.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(0.4,'rgba(255,255,255,0.5)');g.addColorStop(1,'rgba(255,255,255,0)');c.fillStyle=g;c.fillRect(0,0,64,64);t.update();t.hasAlpha=true;return t;})();
+  var spores=new BABYLON.ParticleSystem('spores',800,scene);spores.particleTexture=dotTex;spores.blendMode=BABYLON.ParticleSystem.BLENDMODE_ADD;spores.emitter=new BABYLON.Vector3(0,H-0.5,0);spores.minEmitBox=new BABYLON.Vector3(-W/2,-1.5,-D/2);spores.maxEmitBox=new BABYLON.Vector3(W/2,0.5,D/2);spores.color1=new BABYLON.Color4(0.8,0.9,1,0.5);spores.color2=new BABYLON.Color4(0.6,0.8,0.9,0.3);spores.colorDead=new BABYLON.Color4(0.2,0.3,0.4,0);spores.minSize=0.02;spores.maxSize=0.08;spores.minLifeTime=10;spores.maxLifeTime=22;spores.emitRate=65;spores.direction1=new BABYLON.Vector3(-0.05,-0.12,-0.05);spores.direction2=new BABYLON.Vector3(0.05,-0.03,0.05);spores.minEmitPower=0.03;spores.maxEmitPower=0.12;spores.gravity=new BABYLON.Vector3(0,-0.05,0);spores.start();
+  setProgress(60);
+
+  // ── camera ──
+  var camera=new BABYLON.UniversalCamera('fps',new BABYLON.Vector3(0,1.7,5),scene);camera.setTarget(new BABYLON.Vector3(1.5,2,-2));camera.attachControl(canvas,true);camera.speed=0.22;camera.angularSensibility=3600;camera.minZ=0.05;camera.fov=1.0;camera.keysUp=[87,38];camera.keysDown=[83,40];camera.keysLeft=[65,37];camera.keysRight=[68,39];camera.checkCollisions=true;camera.applyGravity=false;camera.ellipsoid=new BABYLON.Vector3(0.5,0.85,0.5);
+  canvas.addEventListener('click',function(){if(canvas.requestPointerLock)canvas.requestPointerLock();});
+
+  // ── post ──
+  try{if(BABYLON.SSAO2RenderingPipeline&&BABYLON.SSAO2RenderingPipeline.IsSupported){var ssao=new BABYLON.SSAO2RenderingPipeline('ssao',scene,{ssaoRatio:0.7,blurRatio:1},[camera]);ssao.radius=0.9;ssao.totalStrength=1.1;ssao.expensiveBlur=true;ssao.samples=12;ssao.maxZ=60;}}catch(e){console.warn('SSAO skipped',e);}
+  var pipe=new BABYLON.DefaultRenderingPipeline('pipe',true,scene,[camera]);
+  pipe.fxaaEnabled=true;pipe.bloomEnabled=true;pipe.bloomThreshold=0.6;pipe.bloomWeight=0.7;pipe.bloomKernel=64;
+  pipe.imageProcessing.toneMappingEnabled=true;pipe.imageProcessing.toneMappingType=BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+  pipe.imageProcessing.exposure=1.15;pipe.imageProcessing.contrast=1.3;
+  pipe.imageProcessing.vignetteEnabled=true;pipe.imageProcessing.vignetteWeight=3.2;pipe.imageProcessing.vignetteColor=new BABYLON.Color4(0,0,0.02,1);
+  pipe.grainEnabled=true;pipe.grain.intensity=8;pipe.grain.animated=true;
+  pipe.chromaticAberrationEnabled=true;pipe.chromaticAberration.aberrationAmount=13;pipe.chromaticAberration.radialIntensity=0.8;
+  pipe.imageProcessing.colorCurvesEnabled=true;var cc=new BABYLON.ColorCurves();cc.shadowsHue=210;cc.shadowsDensity=40;cc.shadowsSaturation=30;cc.highlightsHue=30;cc.highlightsDensity=10;pipe.imageProcessing.colorCurves=cc;
+  try{var vls=new BABYLON.VolumetricLightScatteringPostProcess('god',1.0,camera,winGlow,60,BABYLON.Texture.BILINEAR_SAMPLINGMODE,engine,false);vls.exposure=0.16;vls.decay=0.968;vls.weight=0.4;vls.density=0.9;}catch(e){console.warn('god rays skipped',e);}
+  setProgress(66);
+
+  // ═══════════════════════════════════════════════════════════
+  //  THE PIPELINE TEST — load REAL library assets at runtime
+  // ═══════════════════════════════════════════════════════════
+  var pending=0, settled=0, revealed=false;
+  function reveal(){ if(revealed)return; revealed=true; setProgress(100);
+    setTimeout(function(){var l=document.getElementById('loading');l.style.opacity='0';setTimeout(function(){l.style.display='none';},1400);},400); }
+  function settle(){ settled++; setProgress(66+ (settled/Math.max(1,pending))*30); if(settled>=pending) reveal(); }
+  setTimeout(reveal, 30000); // safety net
+
+  function placeGLB(url, targetSize, pos, rotY){
+    pending++;
+    var i=url.lastIndexOf('/')+1, root=url.substring(0,i), file=url.substring(i);
+    BABYLON.SceneLoader.ImportMesh(null, root, file, scene, function(meshes){
+      var min=new BABYLON.Vector3(1e9,1e9,1e9), max=new BABYLON.Vector3(-1e9,-1e9,-1e9);
+      meshes.forEach(function(m){ if(!m.getBoundingInfo)return; m.computeWorldMatrix(true); var bb=m.getBoundingInfo().boundingBox; min=BABYLON.Vector3.Minimize(min,bb.minimumWorld); max=BABYLON.Vector3.Maximize(max,bb.maximumWorld); });
+      var roots=meshes.filter(function(m){return !m.parent;}), holder=roots[0]||meshes[0];
+      var size=max.subtract(min), maxDim=Math.max(size.x,size.y,size.z)||1, scl=targetSize/maxDim;
+      var ctr=min.add(max).scale(0.5);
+      var pivot=new BABYLON.TransformNode('pv',scene); pivot.position=pos.clone(); pivot.rotation.y=rotY||0;
+      holder.parent=pivot;
+      holder.scaling.scaleInPlace(scl);
+      holder.position.set(-ctr.x*scl, -min.y*scl, -ctr.z*scl);
+      meshes.forEach(function(m){ if(m.getTotalVertices&&m.getTotalVertices()>0){ shadow.addShadowCaster(m); m.receiveShadows=true; } });
+      settle();
+    }, null, function(s,msg){
+      console.warn('load failed:', file, msg);
+      // fallback so the slot is never empty
+      var box=BABYLON.MeshBuilder.CreateBox('fb',{width:targetSize*0.6,height:targetSize*0.5,depth:targetSize*0.6},scene);
+      box.position=pos.clone(); box.position.y=targetSize*0.25; box.material=propMat; box.checkCollisions=true; shadow.addShadowCaster(box);
+      settle();
+    });
+  }
+
+  var BASE='https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/';
+  subEl.textContent='loading a real velvet sofa (Wayfair, via Khronos)';
+  placeGLB(BASE+'GlamVelvetSofa/glTF-Binary/GlamVelvetSofa.glb', 3.0, new BABYLON.Vector3(2.3,0,3.2), Math.PI);      // real sofa
+  placeGLB(BASE+'SheenChair/glTF-Binary/SheenChair.glb',         1.2, new BABYLON.Vector3(-2.6,0,3.6), -Math.PI*0.15); // real chair
+  placeGLB(BASE+'DamagedHelmet/glTF-Binary/DamagedHelmet.glb',   0.75, new BABYLON.Vector3(2.4,0.5,1.2), 0.6);         // recovered artifact on the table
+
+  // ── loop ──
+  var t=0;
+  scene.registerBeforeRender(function(){
+    var dt=engine.getDeltaTime()/1000; t+=dt;
+    if(camera.position.y!==1.7) camera.position.y=1.7;
+    for(var i=0;i<bulbs.length;i++){var bl=bulbs[i],f=bl.fl?(0.5+0.5*Math.sin(t*9+bl.ph)+(Math.random()<0.04?-0.6:0)):(0.8+0.2*Math.sin(t*2+bl.ph));bl.mat.emissiveColor=bl.base.scale(Math.max(0.1,f));}
+    var sx=Math.sin(t*1.1)*0.7, sz=1+Math.cos(t*0.9)*0.4;
+    bareBulb.position.set(sx,H-1.15,sz); bulbSpot.position.set(sx,H-1.15,sz);
+    bulbSpot.intensity=18+Math.sin(t*7)*3+(Math.random()<0.02?-8:0);
+    scrMat.emissiveColor=new BABYLON.Color3(0.25+Math.random()*0.15,0.35+Math.random()*0.15,0.45+Math.random()*0.15);
+    var pulse=0.6+Math.sin(t*2.2)*0.3+flare*1.5;
+    breachMat.emissiveColor=GATE.scale(pulse); breachLight.intensity=14+Math.sin(t*2.2)*5+flare*30;
+    breach.scaling.setAll(1+Math.sin(t*1.5)*0.03+flare*0.1);
+    if(burst.manualEmitCount>0) burst.manualEmitCount=0; flare*=0.93;
+  });
+
+  // breach interaction
+  var flare=0;
+  var burst=new BABYLON.ParticleSystem('burst',600,scene);burst.particleTexture=dotTex;burst.blendMode=BABYLON.ParticleSystem.BLENDMODE_ADD;burst.emitter=new BABYLON.Vector3(1.5,2,-D/2+0.4);burst.createSphereEmitter(0.4);burst.color1=new BABYLON.Color4(1,0.5,0.2,1);burst.color2=new BABYLON.Color4(1,0.3,0.1,1);burst.colorDead=new BABYLON.Color4(0.3,0.05,0,0);burst.minSize=0.08;burst.maxSize=0.3;burst.minLifeTime=0.6;burst.maxLifeTime=1.4;burst.minEmitPower=4;burst.maxEmitPower=12;burst.updateSpeed=0.02;burst.manualEmitCount=0;burst.start();
+  scene.onPointerObservable.add(function(pi){if(pi.type===BABYLON.PointerEventTypes.POINTERPICK&&pi.pickInfo&&pi.pickInfo.pickedMesh===breach){flare=1;burst.manualEmitCount=500;}});
+
+  engine.runRenderLoop(function(){scene.render();});
+  window.addEventListener('resize',function(){engine.resize();});
+  setTimeout(function(){var c=document.getElementById('cap');if(c)c.style.opacity='0.2';},11000);
+  console.log('[BABYLON] Pipeline test · v'+BABYLON.Engine.Version);
+})();
+</script>
+</body>
+</html>

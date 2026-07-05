@@ -2,6 +2,12 @@
 
 An infinite, AI-controlled multiverse game built with Babylon.js.
 
+## Project Brain
+
+Project documentation lives in [`brain/`](brain/README.md) — the canonical source of truth
+for vision, architecture, assets, art direction, gameplay, roadmap, and decisions.
+New sessions (AI or human) should start with [`brain/CURRENT_STATE.md`](brain/CURRENT_STATE.md).
+
 ## Architecture
 
 - `index.html` - Main entry point with location selector
