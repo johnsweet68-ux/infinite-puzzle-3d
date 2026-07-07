@@ -5,7 +5,7 @@ with memory, old chat transcripts, or assumptions from a previous session, this 
 If a claim here conflicts with the actual code in the repository, the code wins — and the
 Brain must be corrected in the same piece of work.
 
-Last full revision: 2026-07-05
+Last full revision: 2026-07-05 · Philosophy integrated: 2026-07-07 (SD-004)
 
 ---
 
@@ -13,16 +13,20 @@ Last full revision: 2026-07-05
 
 1. **CURRENT_STATE.md** — what exists right now, what is verified, what is unknown. Start here.
 2. **AI_RULES.md** — how to work on this project (conventions, guardrails, update protocol).
-3. **VISION.md** — why the project exists and where it is going.
-4. Then whatever your task needs:
+3. **PROJECT_PHILOSOPHY.md** — the canonical creative foundation: what the project is
+   actually about (people, memory, meaning). Every major feature, world, puzzle, mechanic,
+   AI system, and story decision is tested against it.
+4. **VISION.md** — why the project exists and where it is going (strategy, constraints, quality bar).
+5. Then whatever your task needs:
    - Building or changing the 3D client → **ARCHITECTURE.md**, then `reference/`
    - Anything touching models, textures, HDRIs → **ASSETS.md**
    - Anything visual (lighting, palette, post, mood) → **ART_BIBLE.md**
    - Gameplay, puzzles, progression → **GAME.md**
+   - Story, tone, meaning, player contribution → **PROJECT_PHILOSOPHY.md**
    - Planning or prioritising work → **ROADMAP.md**
    - "Why is it done this way?" → **DECISIONS.md**
 
-A new AI session should be able to work productively after reading (1)–(3) plus the one
+A new AI session should be able to work productively after reading (1)–(4) plus the one
 task-relevant document. That is the design target for this folder: **fast onboarding
 without re-analysing the repository.**
 
@@ -32,6 +36,7 @@ without re-analysing the repository.**
 |---|---|---|
 | CURRENT_STATE.md | What exists today? What is unknown? | Every working session |
 | AI_RULES.md | How do I work here without breaking things? | Rare |
+| PROJECT_PHILOSOPHY.md | What is this project really about? What must every feature serve? | Rare (canonical creative foundation) |
 | VISION.md | Why does this exist? What is the quality bar? | Rare |
 | GAME.md | What is the game? | Occasional |
 | ARCHITECTURE.md | How is it built? | When architecture changes |

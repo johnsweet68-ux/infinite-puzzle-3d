@@ -1,6 +1,6 @@
 # CURRENT STATE
 
-**Snapshot date: 2026-07-05.** Re-date and update this file in every session that
+**Snapshot date: 2026-07-07.** Re-date and update this file in every session that
 changes anything material.
 
 ## Where the project stands, in three sentences
@@ -15,6 +15,7 @@ the project's critical path — does not exist yet.
 
 | Artefact | Where | Verified how |
 |---|---|---|
+| Canonical creative foundation (people, memory, meaning; The Legacy) | `brain/PROJECT_PHILOSOPHY.md` | Added verbatim per SD-004, 2026-07-07; see D-008 |
 | Strategic handover doc (the vision) | `brain/reference/PHASE3-HANDOVER-3D-PIVOT.md` | Read in full |
 | Reference scene: hybrid shell + authored props + full mood stack | `brain/reference/babylon-pipeline.html` | Read in full; live copy confirmed on peaceful-kashata site |
 | Reference scene: full authored environment (Sponza) walkable | `brain/reference/babylon-chamber.html` | Read in full |

@@ -1,6 +1,10 @@
 # GAME
 
 What the player experiences. For how it is implemented, see ARCHITECTURE.md.
+For *why* any of it exists — worlds, puzzles, player contribution, The Legacy — see
+**PROJECT_PHILOSOPHY.md** (canonical); design in this document defers to it. Chambers
+are worlds/experiences, never "levels", and each one — like each puzzle — must answer:
+*"What does this teach us about humanity?"*
 
 ## Core loop
 
@@ -40,6 +44,8 @@ implementation moves into the 3D client. The old 2D landing page tracked
 
 ## Chambers
 
+- A chamber is included because it reveals something about humanity, not because it is
+  visually interesting (PROJECT_PHILOSOPHY.md §9).
 - Number, themes, and order of chambers: `Unknown – requires confirmation.`
 - One chamber exists in the live deployed 3D build: **"Modern Apartment"**
   (verified live on infinite-puzzle-3d.netlify.app, 2026-07-05). Its source code has not

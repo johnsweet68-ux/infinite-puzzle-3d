@@ -1,12 +1,20 @@
 # VISION
 
+> **Creative foundation:** what this project is *about* — people, memory, meaning, and why
+> anything matters — is defined canonically in **PROJECT_PHILOSOPHY.md**. This document
+> owns strategy, constraints, and the quality bar. Where the two seem to pull apart,
+> PROJECT_PHILOSOPHY.md governs meaning and intent.
+
 ## One paragraph
 
 **The Infinite Puzzle** is a browser-based, first-person 3D puzzle game. The player crosses
 between realities through *tears/breaches* into a sequence of *chambers* — real, walkable,
 authored 3D spaces drowned in a corrupted-reality atmosphere — and solves a puzzle in each.
 Some puzzles are AI-generated server-side. The quality bar is **"a real place you are
-standing inside"**, not "a nice-looking scene".
+standing inside"**, not "a nice-looking scene". Beneath the puzzles and the multiverse,
+the project is about people and the meaning they attach to existence — every major
+feature is tested against *"What does this teach us about humanity?"*
+(PROJECT_PHILOSOPHY.md).
 
 ## The pivot that defines the current era
 

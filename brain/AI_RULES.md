@@ -5,8 +5,12 @@ The Infinite Puzzle. These exist so multiple AI sessions produce one coherent pr
 
 ## 1. Orientation
 
-- Read CURRENT_STATE.md first, then this file, then VISION.md. Do not start work from
-  memory of a previous conversation.
+- Read CURRENT_STATE.md first, then this file, then PROJECT_PHILOSOPHY.md, then VISION.md.
+  Do not start work from memory of a previous conversation.
+- **PROJECT_PHILOSOPHY.md is the canonical creative foundation.** Before accepting any
+  major feature, world, puzzle, mechanic, AI system, or story decision into the project,
+  test it against its central question: *"What does this teach us about humanity?"*
+  If it doesn't help answer that, challenge it.
 - **The 2D canvas build is dead.** Do not pattern-match to layered-canvas rendering,
   mouse-proximity audio, or 2D-era code, even if you find it in old deploys or chats.
 - The Brain outranks recollection; the repository code outranks the Brain — and when it

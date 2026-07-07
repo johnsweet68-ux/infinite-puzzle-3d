@@ -56,6 +56,20 @@ have to be re-litigated by a future session.
   (Brain → Art Bible → AI Workflow → Standards → Core Systems → Features).
 - **Consequences:** Slight overhead per change; large reduction in re-analysis and drift.
 
+## D-008 · Adopt PROJECT_PHILOSOPHY.md as the canonical creative foundation — **Accepted** (2026-07-07)
+- **Context:** Studio directive SD-004. The creative heart of the project — people, memory,
+  meaning; The Legacy; contribution as preservation rather than level creation — had no
+  canonical home in the Brain.
+- **Decision:** `brain/PROJECT_PHILOSOPHY.md` is the canonical creative foundation. Every
+  major feature, world, puzzle, mechanic, AI system, and story decision is tested against
+  its central question — *"What does this teach us about humanity?"* — before being
+  accepted. Other Brain documents defer to it on meaning and intent; VISION.md continues
+  to own strategy, constraints, and the quality bar.
+- **Consequences:** README reading order and document map updated; VISION.md, GAME.md,
+  and AI_RULES.md now reference and defer to the philosophy. Future design reviews
+  include a philosophy check.
+- **Source:** SD-004; `brain/PROJECT_PHILOSOPHY.md`.
+
 ---
 
 *Template for new entries:*
